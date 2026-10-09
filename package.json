@@ -1,0 +1,29 @@
+{
+  "name": "cold-reach",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Conversation-led marketing assistant domain core and data contracts",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "eslint \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" README.md",
+    "format": "prettier --write \"src/**/*.ts\" README.md"
+  },
+  "dependencies": {
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "@typescript-eslint/eslint-plugin": "^8.26.0",
+    "@typescript-eslint/parser": "^8.26.0",
+    "eslint": "^9.21.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.7"
+  }
+}
