@@ -38,6 +38,44 @@ class ColdReachApp {
     };
   }
 
+  // --- Opportunity Contract Accessor Helpers ---
+  getOppPlatform(opp) {
+    return opp?.conversation?.platform || 'Hacker News';
+  }
+
+  getOppProvenance(opp) {
+    return opp?.conversation?.sourceProvenance || 'DEMO';
+  }
+
+  getOppAuthor(opp) {
+    return opp?.conversation?.authorAlias || 'anon';
+  }
+
+  getOppExcerpt(opp) {
+    return opp?.conversation?.contentExcerpt || '';
+  }
+
+  getOppPermalink(opp) {
+    return opp?.conversation?.sourcePermalink || '#';
+  }
+
+  getOppTimestamp(opp) {
+    return opp?.conversation?.timestamp || opp?.createdAt || new Date().toISOString();
+  }
+
+  getOppWhyMatched(opp) {
+    return opp?.whyMatched?.matchedNeeds?.[0] || opp?.whyMatched?.summary || 'Direct value match';
+  }
+
+  getOppDraftText(opp) {
+    return (
+      opp?.replyDraft?.replyText ||
+      (opp?.relevanceScore < 40
+        ? 'Draft requires explicit override (score < 40).'
+        : 'Click "Generate Contextual Draft" below to formulate an authentic peer reply.')
+    );
+  }
+
   async init() {
     this.setupTheme();
     this.setupNavigation();
@@ -334,11 +372,12 @@ class ColdReachApp {
         });
 
         if (demoRes.items && demoRes.items.length > 0) {
+          const rawCandidates = demoRes.items.map((i) => i.conversation || i);
           await this.apiFetch('/opportunities/attribute-batch', {
             method: 'POST',
             body: JSON.stringify({
               profileId: this.activeProfile.id,
-              candidates: demoRes.items
+              candidates: rawCandidates
             })
           });
         }
@@ -533,11 +572,12 @@ class ColdReachApp {
       if (step4Status) step4Status.innerHTML = '<span class="text-tertiary font-bold">Done</span>';
 
       if (searchRes.items && searchRes.items.length > 0 && this.activeProfile) {
+        const rawCandidates = searchRes.items.map((i) => i.conversation || i);
         await this.apiFetch('/opportunities/attribute-batch', {
           method: 'POST',
           body: JSON.stringify({
             profileId: this.activeProfile.id,
-            candidates: searchRes.items
+            candidates: rawCandidates
           }),
           signal: this.abortController.signal
         });
@@ -578,23 +618,30 @@ class ColdReachApp {
 
     const items = this.opportunities.slice(0, 3);
     listContainer.innerHTML = items
-      .map(
-        (opp) => `
+      .map((opp) => {
+        const platform = this.getOppPlatform(opp);
+        const author = this.getOppAuthor(opp);
+        const excerpt = this.getOppExcerpt(opp);
+        const permalink = this.getOppPermalink(opp);
+        const provenance = this.getOppProvenance(opp);
+        const whyMatched = this.getOppWhyMatched(opp);
+
+        return `
       <div class="bg-surface-container rounded-xl p-space-lg neu-raised flex flex-col gap-space-md transition-all mb-space-md">
         <div class="flex items-start justify-between gap-space-sm flex-wrap">
           <div class="flex items-center gap-space-sm">
             <div class="w-9 h-9 rounded-full bg-surface-container-highest neu-inset flex items-center justify-center font-bold text-secondary text-title-sm">
-              ${opp.platform === 'Hacker News' ? 'Y' : opp.platform === 'Reddit' ? 'r/' : 'B'}
+              ${platform.includes('Hacker') ? 'Y' : platform.includes('Reddit') ? 'r/' : platform.includes('Bluesky') ? 'B' : 'RSS'}
             </div>
             <div>
               <div class="flex items-center gap-space-xs">
-                <span class="font-title-sm text-title-sm text-on-surface font-semibold">${this.escapeHtml(opp.conversationItem.title || 'Discussion')}</span>
-                <a href="${this.escapeHtml(opp.conversationItem.url)}" target="_blank" rel="noopener noreferrer" class="material-symbols-outlined text-[16px] text-outline hover:text-primary">open_in_new</a>
+                <span class="font-title-sm text-title-sm text-on-surface font-semibold">${this.escapeHtml(excerpt.slice(0, 60))}...</span>
+                <a href="${this.escapeHtml(permalink)}" target="_blank" rel="noopener noreferrer" class="material-symbols-outlined text-[16px] text-outline hover:text-primary">open_in_new</a>
               </div>
               <div class="flex items-center gap-space-xs font-label-sm text-label-sm text-outline">
-                <span>${opp.platform}</span>
+                <span>${platform}</span>
                 <span>•</span>
-                <span>by @${this.escapeHtml(opp.conversationItem.author || 'anon')}</span>
+                <span>by @${this.escapeHtml(author)}</span>
               </div>
             </div>
           </div>
@@ -602,17 +649,17 @@ class ColdReachApp {
             <span class="px-space-xs py-0.5 rounded-full bg-tertiary text-on-tertiary font-label-sm text-label-sm font-bold">
               ${opp.relevanceScore}% ICP Fit
             </span>
-            <span class="px-space-xs py-0.5 rounded-full ${opp.provenance === 'LIVE' ? 'bg-tertiary-fixed text-on-tertiary-fixed-variant' : 'bg-surface-container-highest text-on-surface'} neu-inset font-label-sm text-label-sm font-bold">
-              ${opp.provenance}
+            <span class="px-space-xs py-0.5 rounded-full ${provenance === 'LIVE' ? 'bg-tertiary-fixed text-on-tertiary-fixed-variant' : 'bg-surface-container-highest text-on-surface'} neu-inset font-label-sm text-label-sm font-bold">
+              ${provenance}
             </span>
           </div>
         </div>
         <div class="p-space-md rounded-lg bg-surface-container-low neu-inset font-body-md text-body-md text-on-surface">
-          "${this.escapeHtml(opp.conversationItem.text.slice(0, 240))}..."
+          "${this.escapeHtml(excerpt.slice(0, 240))}..."
         </div>
         <div class="flex items-start gap-space-xs text-on-surface-variant font-label-md text-label-md">
           <span class="material-symbols-outlined text-secondary text-[16px] shrink-0 mt-0.5">auto_awesome</span>
-          <span><strong>Why matched:</strong> ${this.escapeHtml(opp.whyMatched.problemsSolved[0] || 'Matches product value proposition')}</span>
+          <span><strong>Why matched:</strong> ${this.escapeHtml(whyMatched)}</span>
         </div>
         <div class="flex items-center justify-between pt-space-xs flex-wrap gap-space-sm">
           <div class="flex items-center gap-space-xs">
@@ -626,8 +673,8 @@ class ColdReachApp {
           </div>
         </div>
       </div>
-    `
-      )
+    `;
+      })
       .join('');
   }
 
@@ -648,7 +695,7 @@ class ColdReachApp {
 
     // Card 2: High Match
     const highEl = document.getElementById('dashMetricHighMatch');
-    if (highEl) highEl.textContent = Number(m.relevanceDistribution.high || 0).toLocaleString();
+    if (highEl) highEl.textContent = Number(m.relevanceDistribution?.tiers?.high ?? 0).toLocaleString();
 
     // Card 3: Drafts awaiting review
     const draftsEl = document.getElementById('dashMetricDrafts');
@@ -660,7 +707,7 @@ class ColdReachApp {
 
     // Ingestion dynamics
     const dynDispatched = document.getElementById('dynManualDispatches');
-    if (dynDispatched) dynDispatched.textContent = String(m.auditSummary.verifiedManualDispatches);
+    if (dynDispatched) dynDispatched.textContent = String(m.auditSummary?.manualDispatchConfirmedCount ?? 0);
   }
 
   renderDashboardTasks() {
@@ -674,25 +721,30 @@ class ColdReachApp {
     }
 
     container.innerHTML = pending
-      .map(
-        (opp) => `
+      .map((opp) => {
+        const platform = this.getOppPlatform(opp);
+        const excerpt = this.getOppExcerpt(opp);
+        const provenance = this.getOppProvenance(opp);
+        const whyMatched = this.getOppWhyMatched(opp);
+
+        return `
       <div class="p-space-md rounded-xl bg-surface-container-low neu-raised-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-md hover:bg-surface-container transition-all">
         <div class="flex items-start gap-space-md">
           <div class="w-10 h-10 rounded-xl bg-surface-container neu-inset flex-shrink-0 flex items-center justify-center font-bold text-secondary text-sm">
-            ${opp.platform === 'Hacker News' ? 'Y' : opp.platform === 'Reddit' ? 'r/' : 'B'}
+            ${platform.includes('Hacker') ? 'Y' : platform.includes('Reddit') ? 'r/' : platform.includes('Bluesky') ? 'B' : 'RSS'}
           </div>
           <div class="flex flex-col gap-0.5">
             <div class="flex items-center gap-space-xs flex-wrap">
-              <span class="font-label-sm text-label-sm uppercase font-bold text-on-surface-variant">${opp.platform}</span>
+              <span class="font-label-sm text-label-sm uppercase font-bold text-on-surface-variant">${platform}</span>
               <span class="text-outline">•</span>
               <span class="px-space-xs py-0.2 rounded bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-label-sm font-bold">${opp.relevanceScore}% Fit</span>
-              <span class="px-space-xs py-0.2 rounded ${opp.provenance === 'LIVE' ? 'bg-tertiary-fixed text-on-tertiary-fixed-variant' : 'bg-surface-container-highest'} neu-inset font-label-sm text-label-sm font-bold">${opp.provenance}</span>
+              <span class="px-space-xs py-0.2 rounded ${provenance === 'LIVE' ? 'bg-tertiary-fixed text-on-tertiary-fixed-variant' : 'bg-surface-container-highest'} neu-inset font-label-sm text-label-sm font-bold">${provenance}</span>
             </div>
             <a class="font-title-sm text-title-sm text-on-surface hover:text-primary transition-colors line-clamp-1 font-semibold" href="javascript:window.coldReachApp.openOpportunityDetail('${opp.id}')">
-              ${this.escapeHtml(opp.conversationItem.title || opp.conversationItem.text.slice(0, 80))}
+              ${this.escapeHtml(excerpt.slice(0, 80))}
             </a>
             <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">
-              Angle: "${this.escapeHtml(opp.whyMatched.problemsSolved[0] || 'Direct solution match')}"
+              Angle: "${this.escapeHtml(whyMatched)}"
             </p>
           </div>
         </div>
@@ -705,8 +757,8 @@ class ColdReachApp {
           </button>
         </div>
       </div>
-    `
-      )
+    `;
+      })
       .join('');
   }
 
@@ -721,18 +773,19 @@ class ColdReachApp {
 
     list.innerHTML = this.providers
       .map((p) => {
-        const isLive = p.isLive && p.status === 'ACTIVE';
+        const isReady = p.state === 'READY';
+        const isLive = p.provenance === 'LIVE' && isReady;
         return `
         <div class="p-space-sm rounded-lg bg-surface-container-low neu-inset flex items-center justify-between">
           <div class="flex items-center gap-space-sm">
-            <span class="w-2 h-2 rounded-full ${isLive ? 'bg-tertiary-container animate-pulse' : 'bg-outline'}"></span>
+            <span class="w-2 h-2 rounded-full ${isLive ? 'bg-tertiary-container animate-pulse' : isReady ? 'bg-secondary' : 'bg-outline'}"></span>
             <div class="flex flex-col">
               <span class="font-title-sm text-title-sm text-on-surface leading-tight">${this.escapeHtml(p.name)}</span>
-              <span class="font-body-sm text-body-sm text-on-surface-variant">${p.capabilities?.join(', ') || 'Public read connector'}</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">${this.escapeHtml(p.description || 'Provider connector')}</span>
             </div>
           </div>
-          <span class="px-space-xs py-0.5 rounded-full ${isLive ? 'bg-tertiary-fixed text-on-tertiary-fixed-variant' : 'bg-surface-container-highest text-outline'} font-label-sm text-label-sm font-semibold">
-            ${isLive ? 'LIVE' : p.status}
+          <span class="px-space-xs py-0.5 rounded-full ${isLive ? 'bg-tertiary-fixed text-on-tertiary-fixed-variant' : isReady ? 'bg-secondary-container text-on-secondary-container' : 'bg-surface-container-highest text-outline'} font-label-sm text-label-sm font-semibold">
+            ${isLive ? 'LIVE' : p.state}
           </span>
         </div>
       `;
@@ -791,30 +844,35 @@ class ColdReachApp {
     container.innerHTML = res.items
       .map((opp) => {
         const isSelected = opp.id === this.selectedOpportunityId;
+        const platform = this.getOppPlatform(opp);
+        const author = this.getOppAuthor(opp);
+        const excerpt = this.getOppExcerpt(opp);
+        const provenance = this.getOppProvenance(opp);
+
         return `
         <div class="group relative rounded-2xl p-space-md bg-surface-container neu-raised cursor-pointer transition-all duration-150 ${isSelected ? 'ring-2 ring-primary' : 'hover:neu-raised-sm'}" onclick="window.coldReachApp.selectOpportunity('${opp.id}')">
           ${isSelected ? '<div class="absolute left-0 top-3 bottom-3 w-1.5 bg-primary-container rounded-r-full"></div>' : ''}
           <div class="pl-space-xs flex flex-col gap-space-sm">
             <div class="flex items-center justify-between gap-space-xs flex-wrap">
               <div class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
-                <span class="font-bold text-on-surface">${opp.platform}</span>
+                <span class="font-bold text-on-surface">${platform}</span>
                 <span class="text-outline">·</span>
-                <span>@${this.escapeHtml(opp.conversationItem.author || 'anon')}</span>
+                <span>@${this.escapeHtml(author)}</span>
               </div>
               <div class="flex items-center gap-1">
                 <span class="px-2 py-0.5 rounded-full bg-primary-container text-on-primary font-label-sm text-label-sm font-bold flex items-center gap-1">
                   <span class="material-symbols-outlined text-[12px]">verified</span> ${opp.relevanceScore}% ICP
                 </span>
-                <span class="px-2 py-0.5 rounded-full ${opp.provenance === 'LIVE' ? 'bg-tertiary-fixed text-on-tertiary-fixed-variant' : 'bg-surface-container-highest text-on-surface-variant'} neu-inset font-label-sm text-label-sm font-bold">
-                  ${opp.provenance}
+                <span class="px-2 py-0.5 rounded-full ${provenance === 'LIVE' ? 'bg-tertiary-fixed text-on-tertiary-fixed-variant' : 'bg-surface-container-highest text-on-surface-variant'} neu-inset font-label-sm text-label-sm font-bold">
+                  ${provenance}
                 </span>
               </div>
             </div>
             <h3 class="font-title-md text-title-md text-on-surface font-semibold group-hover:text-primary transition-colors line-clamp-1">
-              ${this.escapeHtml(opp.conversationItem.title || opp.conversationItem.text.slice(0, 60))}
+              ${this.escapeHtml(excerpt.slice(0, 80))}
             </h3>
             <p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">
-              ${this.escapeHtml(opp.conversationItem.text)}
+              ${this.escapeHtml(excerpt)}
             </p>
             <div class="flex items-center justify-between pt-space-xs">
               <span class="px-2 py-0.5 rounded-md bg-surface-container-high neu-inset text-secondary font-label-sm text-label-sm font-semibold flex items-center gap-1">
@@ -870,9 +928,15 @@ class ColdReachApp {
     const panel = document.getElementById('opportunityDetailPanel');
     if (!panel) return;
 
-    const draftText = opp.replyDraft?.currentText || (opp.relevanceScore < 40 ? 'Draft requires explicit override (score < 40).' : 'Click "Generate Contextual Draft" below to formulate an authentic peer reply.');
+    const draftText = this.getOppDraftText(opp);
     const whyMatched = opp.whyMatched;
     const isResponded = opp.status === 'RESPONDED';
+    const platform = this.getOppPlatform(opp);
+    const author = this.getOppAuthor(opp);
+    const excerpt = this.getOppExcerpt(opp);
+    const permalink = this.getOppPermalink(opp);
+    const provenance = this.getOppProvenance(opp);
+    const timestamp = this.getOppTimestamp(opp);
 
     panel.innerHTML = `
       <section class="rounded-2xl p-space-lg bg-surface-container neu-raised flex flex-col gap-space-lg relative">
@@ -881,26 +945,26 @@ class ColdReachApp {
           <div class="flex items-center justify-between gap-space-sm flex-wrap">
             <div class="flex items-center gap-space-sm">
               <div class="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center neu-raised-sm">
-                <span class="material-symbols-outlined text-[20px]">${opp.platform === 'Hacker News' ? 'terminal' : opp.platform === 'Reddit' ? 'forum' : 'cloud'}</span>
+                <span class="material-symbols-outlined text-[20px]">${platform.includes('Hacker') ? 'terminal' : platform.includes('Reddit') ? 'forum' : platform.includes('Bluesky') ? 'cloud' : 'feed'}</span>
               </div>
               <div class="flex flex-col">
                 <div class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
-                  <span class="font-bold text-on-surface">${opp.platform}</span>
+                  <span class="font-bold text-on-surface">${platform}</span>
                   <span class="text-outline">·</span>
-                  <span>${opp.conversationItem.author ? '@' + this.escapeHtml(opp.conversationItem.author) : 'Community User'}</span>
+                  <span>@${this.escapeHtml(author)}</span>
                 </div>
                 <div class="flex items-center gap-space-xs font-title-sm text-title-sm text-on-surface">
-                  <span class="font-semibold">${opp.provenance} Source Post</span>
+                  <span class="font-semibold">${provenance} Source Post</span>
                 </div>
               </div>
             </div>
-            <a class="h-9 px-space-md rounded-full bg-surface-container-high neu-raised-sm text-primary hover:text-on-primary hover:bg-primary transition-all flex items-center gap-space-xs font-label-lg text-label-lg" href="${this.escapeHtml(opp.conversationItem.url)}" target="_blank" rel="noopener noreferrer">
+            <a class="h-9 px-space-md rounded-full bg-surface-container-high neu-raised-sm text-primary hover:text-on-primary hover:bg-primary transition-all flex items-center gap-space-xs font-label-lg text-label-lg" href="${this.escapeHtml(permalink)}" target="_blank" rel="noopener noreferrer">
               <span>Open Original Link</span>
               <span class="material-symbols-outlined text-[16px]">open_in_new</span>
             </a>
           </div>
           <h2 class="font-headline-sm text-headline-sm text-on-surface font-bold pt-space-xs leading-snug">
-            ${this.escapeHtml(opp.conversationItem.title || opp.conversationItem.text.slice(0, 100))}
+            ${this.escapeHtml(excerpt.slice(0, 100))}
           </h2>
         </div>
 
@@ -911,10 +975,10 @@ class ColdReachApp {
               <span class="material-symbols-outlined text-[16px] text-secondary">format_quote</span>
               <span class="font-bold uppercase tracking-wider text-on-surface-variant">Original Post Body</span>
             </div>
-            <span>${opp.platform} • ${new Date(opp.conversationItem.publishedAt).toLocaleDateString()}</span>
+            <span>${platform} • ${new Date(timestamp).toLocaleDateString()}</span>
           </div>
           <p class="font-body-md text-body-md text-on-surface leading-relaxed italic pl-space-sm border-l-2 border-primary/40">
-            "${this.escapeHtml(opp.conversationItem.text)}"
+            "${this.escapeHtml(excerpt)}"
           </p>
         </div>
 
@@ -931,7 +995,7 @@ class ColdReachApp {
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-space-sm">
-            ${(whyMatched.problemsSolved || [])
+            ${(whyMatched.matchedNeeds || [])
               .map(
                 (p) => `
               <div class="p-space-sm rounded-lg bg-surface-container neu-inset flex items-start gap-space-xs">
@@ -947,7 +1011,7 @@ class ColdReachApp {
           </div>
           <div class="flex items-center gap-space-xs flex-wrap pt-space-xs">
             <span class="font-label-sm text-label-sm text-outline font-semibold">Matched Keywords:</span>
-            ${(whyMatched.matchedTerms || [])
+            ${(opp.conversation?.matchedKeywords || [])
               .map(
                 (t) => `
               <span class="px-2 py-0.5 rounded-full bg-surface-container-high neu-inset font-label-sm text-label-sm text-primary font-semibold">${this.escapeHtml(t)}</span>
@@ -1044,7 +1108,7 @@ class ColdReachApp {
         charCounter.textContent = `${textarea.value.length} characters`;
       });
       textarea.addEventListener('blur', () => {
-        if (opp.replyDraft && textarea.value !== opp.replyDraft.currentText) {
+        if (opp.replyDraft && textarea.value !== opp.replyDraft.replyText) {
           this.saveDraftEdit(opp.id, textarea.value);
         }
       });
@@ -1121,7 +1185,8 @@ class ColdReachApp {
   async copyOpportunityPayload(id) {
     try {
       const payload = await this.apiFetch(`/opportunities/${id}/copy`);
-      await navigator.clipboard.writeText(payload.formattedText);
+      const textToCopy = payload.clipboardText || payload.replyText || '';
+      await navigator.clipboard.writeText(textToCopy);
       this.showToast('Full formatted payload copied to clipboard!', 'success');
     } catch (err) {
       this.showToast(err.message || 'Error copying payload', 'error');
@@ -1379,26 +1444,44 @@ class ColdReachApp {
       if (outputContainer) {
         outputContainer.classList.remove('hidden');
         outputContainer.innerHTML = `
-          <div class="p-space-md rounded-xl bg-surface-container-high neu-inset flex flex-col gap-space-sm mt-space-md">
+          <div class="p-space-md rounded-xl bg-surface-container-high neu-inset flex flex-col gap-space-md mt-space-md">
             <div class="flex items-center justify-between">
               <span class="font-title-sm text-title-sm text-primary font-bold">Deterministic Query Expansion Output</span>
-              <span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm font-bold">Active Engine</span>
+              <span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm font-bold">${res.activeTermsCount || 0} Active / ${res.totalTermsCount || 0} Total</span>
             </div>
-            <div class="flex flex-wrap gap-space-xs pt-1">
-              ${(res.primaryTerms || [])
+            <div class="flex flex-col gap-space-sm">
+              ${(res.clusters || [])
                 .map(
-                  (t) => `
-                <span class="px-space-sm py-1 rounded-full bg-surface-container neu-raised-sm font-label-sm text-label-sm text-primary font-semibold flex items-center gap-1">
-                  <span class="material-symbols-outlined text-[12px] text-tertiary">check</span>
-                  ${this.escapeHtml(t.term)} (wt: ${t.weight})
-                </span>
+                  (c) => `
+                <div class="p-space-sm rounded-lg bg-surface-container neu-raised-sm flex flex-col gap-1">
+                  <div class="flex items-center justify-between">
+                    <span class="font-label-sm font-bold text-on-surface uppercase tracking-wider">${this.escapeHtml(c.name)}</span>
+                    <span class="font-label-sm text-outline">${c.terms.length} terms</span>
+                  </div>
+                  <div class="flex flex-wrap gap-space-xs pt-1">
+                    ${c.terms
+                      .map(
+                        (t) => `
+                      <span class="px-space-sm py-0.5 rounded-full ${t.hasConflict ? 'bg-error-container text-on-error-container' : 'bg-surface-container-high text-primary'} font-label-sm text-label-sm font-semibold flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[12px]">${t.hasConflict ? 'warning' : 'check'}</span>
+                        ${this.escapeHtml(t.term)} [${t.source}]
+                      </span>
+                    `
+                      )
+                      .join('')}
+                  </div>
+                </div>
               `
                 )
                 .join('')}
             </div>
-            <div class="text-on-surface-variant font-label-sm text-label-sm pt-1">
-              Negative bounds: ${(res.excludedTerms || []).join(', ') || 'None'}
-            </div>
+            ${
+              res.filteredTerms && res.filteredTerms.length > 0
+                ? `<div class="text-error font-label-sm text-label-sm pt-1">
+                    Filtered excluded topics: ${res.filteredTerms.map((t) => t.term).join(', ')}
+                  </div>`
+                : ''
+            }
           </div>
         `;
       }
@@ -1419,7 +1502,7 @@ class ColdReachApp {
     const elTouches = document.getElementById('analyticsManualTouches');
 
     if (elTotal) elTotal.textContent = Number(m.totalOpportunities || 0).toLocaleString();
-    if (elQualified) elQualified.textContent = Number(m.relevanceDistribution.high || 0).toLocaleString();
+    if (elQualified) elQualified.textContent = Number(m.relevanceDistribution?.tiers?.high ?? 0).toLocaleString();
     if (elReviewed) elReviewed.textContent = Number(m.statusBreakdown.reviewed + m.statusBreakdown.responded || 0).toLocaleString();
     if (elTouches) elTouches.textContent = Number(m.statusBreakdown.responded || 0).toLocaleString();
 
@@ -1450,30 +1533,31 @@ class ColdReachApp {
 
     sourcesList.innerHTML = this.providers
       .map((p) => {
-        const isLive = p.isLive && p.status === 'ACTIVE';
+        const isReady = p.state === 'READY';
+        const isLive = p.provenance === 'LIVE' && isReady;
         return `
         <div class="p-space-lg rounded-xl bg-surface-container neu-raised flex flex-col justify-between">
           <div class="flex items-start justify-between mb-space-md">
             <div class="flex items-center gap-space-sm">
               <div class="w-10 h-10 rounded-xl bg-surface-container-highest neu-inset flex items-center justify-center font-bold text-secondary text-sm">
-                <span class="material-symbols-outlined text-[20px]">${p.name.includes('Hacker') ? 'terminal' : p.name.includes('Reddit') ? 'forum' : 'hub'}</span>
+                <span class="material-symbols-outlined text-[20px]">${p.name.includes('Hacker') ? 'terminal' : p.name.includes('Reddit') ? 'forum' : p.name.includes('Bluesky') ? 'cloud' : 'hub'}</span>
               </div>
               <div class="flex flex-col">
                 <h3 class="font-title-md text-title-md text-on-surface font-semibold">${this.escapeHtml(p.name)}</h3>
-                <span class="font-label-sm text-label-sm text-outline">${isLive ? 'Read-only public API stream' : 'Status: ' + p.status}</span>
+                <span class="font-label-sm text-label-sm text-outline">${isLive ? 'Read-only public API stream' : 'Status: ' + p.state}</span>
               </div>
             </div>
-            <span class="px-space-xs py-0.5 rounded-full ${isLive ? 'bg-tertiary-fixed text-on-tertiary-fixed-variant' : 'bg-surface-container-highest text-outline'} font-label-sm text-label-sm font-bold">
-              ${isLive ? 'CONNECTED' : p.status}
+            <span class="px-space-xs py-0.5 rounded-full ${isLive ? 'bg-tertiary-fixed text-on-tertiary-fixed-variant' : isReady ? 'bg-secondary-container text-on-secondary-container' : 'bg-surface-container-highest text-outline'} font-label-sm text-label-sm font-bold">
+              ${isLive ? 'LIVE CONNECTED' : p.state}
             </span>
           </div>
           <div class="flex flex-col gap-1 text-on-surface-variant font-body-sm text-body-sm mb-space-md">
-            <div>Capabilities: ${p.capabilities?.join(', ') || 'Search'}</div>
-            <div>Latency: ${p.latencyMs ? p.latencyMs + 'ms' : 'Direct JSON'}</div>
+            <div>Provenance: ${p.provenance || 'LIVE'}</div>
+            <div>Description: ${this.escapeHtml(p.description || 'Provider connector')}</div>
           </div>
           <div class="flex items-center justify-between pt-space-xs border-t border-outline-variant/20">
-            <span class="font-label-sm text-label-sm text-outline">Polling rate: 60s</span>
-            <button class="px-space-sm py-1 rounded-full bg-surface-container-high neu-raised-sm font-label-sm text-label-sm text-primary hover:text-on-surface transition-all" onclick="window.coldReachApp.testProviderConnection('${p.provider}')">
+            <span class="font-label-sm text-label-sm text-outline">State: ${p.state}</span>
+            <button class="px-space-sm py-1 rounded-full bg-surface-container-high neu-raised-sm font-label-sm text-label-sm text-primary hover:text-on-surface transition-all" onclick="window.coldReachApp.testProviderConnection('${p.id || p.name}')">
               Verify Link
             </button>
           </div>

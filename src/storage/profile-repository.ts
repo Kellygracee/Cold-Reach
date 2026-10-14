@@ -69,6 +69,30 @@ export class InMemoryProfileRepository implements ProfileRepository {
   }
 }
 
+async function safeAtomicRename(tempFile: string, targetFile: string): Promise<void> {
+  let lastErr: unknown;
+  for (let i = 0; i < 5; i++) {
+    try {
+      await fs.rename(tempFile, targetFile);
+      return;
+    } catch (err: unknown) {
+      lastErr = err;
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code === 'EPERM' || code === 'EBUSY') {
+        await new Promise((res) => setTimeout(res, 30 * (i + 1)));
+      } else {
+        throw err;
+      }
+    }
+  }
+  try {
+    await fs.copyFile(tempFile, targetFile);
+    await fs.unlink(tempFile).catch(() => {});
+  } catch {
+    throw lastErr;
+  }
+}
+
 /**
  * JSON File-backed implementation of ProfileRepository.
  *
@@ -134,7 +158,7 @@ export class FileProfileRepository implements ProfileRepository {
       `.tmp-${path.basename(this.filePath)}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     );
     await fs.writeFile(tempFile, content, 'utf-8');
-    await fs.rename(tempFile, this.filePath);
+    await safeAtomicRename(tempFile, this.filePath);
   }
 
   async findById(id: string): Promise<ProductProfile | null> {

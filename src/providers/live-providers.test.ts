@@ -118,6 +118,37 @@ describe('Phase 3B: Live Conversation Providers', () => {
         }),
       ).rejects.toThrow(ProviderTimeoutError);
     });
+
+    it('safeFetch propagates user cancellation when options.signal is aborted', async () => {
+      const userAbortController = new AbortController();
+      userAbortController.abort(new Error('User cancelled operation'));
+
+      const mockFetch = vi.fn().mockImplementation(
+        (_url: string, init?: RequestInit) =>
+          new Promise((_, reject) => {
+            if (init?.signal?.aborted) {
+              const err = new Error('aborted');
+              err.name = 'AbortError';
+              reject(err);
+              return;
+            }
+            init?.signal?.addEventListener('abort', () => {
+              const err = new Error('aborted');
+              err.name = 'AbortError';
+              reject(err);
+            });
+          }),
+      );
+
+      await expect(
+        safeFetch('https://api.example.com/test', {
+          fetchFn: mockFetch as unknown as typeof fetch,
+          timeoutMs: 5000,
+          providerName: 'test-provider',
+          signal: userAbortController.signal,
+        }),
+      ).rejects.toThrow('User cancelled operation');
+    });
   });
 
   describe('Hacker News Provider (Public & Configured)', () => {

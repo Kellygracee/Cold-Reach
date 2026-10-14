@@ -213,6 +213,7 @@ export class PipelineService {
           startDate: filter.dateRange?.startDate,
           endDate: filter.dateRange?.endDate,
           dateField: filter.dateRange?.field,
+          search: filter.search,
         }
       : undefined;
 

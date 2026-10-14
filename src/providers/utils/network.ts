@@ -179,7 +179,11 @@ export async function safeFetch(url: string, options: SafeFetchOptions): Promise
   }, timeoutMs);
 
   if (options.signal) {
-    options.signal.addEventListener('abort', () => controller.abort(options.signal?.reason));
+    if (options.signal.aborted) {
+      controller.abort(options.signal.reason);
+    } else {
+      options.signal.addEventListener('abort', () => controller.abort(options.signal?.reason));
+    }
   }
 
   let currentUrl = url;
@@ -258,6 +262,10 @@ export async function safeFetch(url: string, options: SafeFetchOptions): Promise
       err instanceof ProviderMalformedResponseError
     ) {
       throw err;
+    }
+
+    if (options.signal?.aborted) {
+      throw options.signal.reason ?? err;
     }
 
     if (controller.signal.aborted) {

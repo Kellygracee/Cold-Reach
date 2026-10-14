@@ -185,6 +185,23 @@ describe('Phase 7: API Integration for the Stitch Frontend', () => {
       expect(result.items.length).toBeGreaterThan(0);
       expect(result.items[0].conversation.sourceProvenance).toBe('DEMO');
     });
+
+    it('supports POST /api/search alias and forceDemo parameter', async () => {
+      const res = await fetch(`${serverUrl}/api/search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          forceDemo: true,
+          queryTerms: ['podcast transcription'],
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json.success).toBe(true);
+      expect(json.data.sourceProvenance).toBe('DEMO');
+      expect(json.data.items.length).toBeGreaterThan(0);
+    });
   });
 
   describe('Opportunity Attribution, Listing & Pagination', () => {
@@ -215,6 +232,40 @@ describe('Phase 7: API Integration for the Stitch Frontend', () => {
       expect(lowOpp.relevanceScore).toBeLessThan(40);
     });
 
+    it('attributes candidate when wrapped in { conversation: ConversationItem } object', async () => {
+      const profiles = await client.listProfiles();
+      const res = await fetch(`${serverUrl}/api/opportunities/attribute`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          candidate: { conversation: highRelevanceCandidate },
+          profile: profiles[0],
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json.success).toBe(true);
+      expect(json.data.id).toBeDefined();
+    });
+
+    it('attributes candidate batch when items are wrapped in { conversation: ConversationItem } objects', async () => {
+      const profiles = await client.listProfiles();
+      const res = await fetch(`${serverUrl}/api/opportunities/attribute-batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          candidates: [{ conversation: highRelevanceCandidate }],
+          profile: profiles[0],
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json.success).toBe(true);
+      expect(json.data.length).toBe(1);
+    });
+
     it('lists opportunities with pagination metadata', async () => {
       const paginated = await client.listOpportunities({ page: 1, pageSize: 1 });
       expect(paginated.items.length).toBe(1);
@@ -224,13 +275,26 @@ describe('Phase 7: API Integration for the Stitch Frontend', () => {
       expect(paginated.pagination.hasNextPage).toBe(true);
     });
 
-    it('filters opportunities by status and score range', async () => {
+    it('filters opportunities by status, score range, and search query', async () => {
       const highOnly = await client.listOpportunities({ minScore: 60 });
       expect(highOnly.items.length).toBeGreaterThanOrEqual(1);
       expect(highOnly.items.every((o) => o.relevanceScore >= 60)).toBe(true);
 
       const newOnly = await client.listOpportunities({ status: 'NEW' });
       expect(newOnly.items.every((o) => o.status === 'NEW')).toBe(true);
+
+      // Search by author alias
+      const searchAuthor = await client.listOpportunities({ search: 'dan_podcaster' });
+      expect(searchAuthor.items.length).toBe(1);
+      expect(searchAuthor.items[0].conversation.authorAlias).toBe('dan_podcaster');
+
+      // Search by keyword substring in contentExcerpt
+      const searchExcerpt = await client.listOpportunities({ search: 'transcribing' });
+      expect(searchExcerpt.items.length).toBe(1);
+
+      // Search with non-matching term returns empty
+      const searchNone = await client.listOpportunities({ search: 'nonexistent-query-string-xyz' });
+      expect(searchNone.items.length).toBe(0);
     });
 
     it('retrieves opportunity detail by ID', async () => {

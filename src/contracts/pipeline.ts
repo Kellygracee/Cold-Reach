@@ -78,6 +78,7 @@ export interface PipelineMetricsFilter {
     min?: number;
     max?: number;
   };
+  search?: string;
 }
 
 export interface PipelineMetrics {

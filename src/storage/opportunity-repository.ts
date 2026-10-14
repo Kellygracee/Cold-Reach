@@ -13,6 +13,7 @@ export interface OpportunityFilter {
   startDate?: string;
   endDate?: string;
   dateField?: 'createdAt' | 'updatedAt' | 'markedSentAt';
+  search?: string;
 }
 
 /**
@@ -93,6 +94,17 @@ function matchesOpportunityFilter(opp: Opportunity, filter?: OpportunityFilter):
       const endTime = new Date(filter.endDate).getTime();
       if (targetTime > endTime) return false;
     }
+  }
+
+  // Free text search across contentExcerpt, authorAlias, or matchedKeywords
+  if (filter.search) {
+    const q = filter.search.toLowerCase().trim();
+    const excerpt = opp.conversation.contentExcerpt.toLowerCase();
+    const author = opp.conversation.authorAlias.toLowerCase();
+    const keywords = (opp.conversation.matchedKeywords ?? []).map((k) => k.toLowerCase());
+    const matchesText =
+      excerpt.includes(q) || author.includes(q) || keywords.some((k) => k.includes(q));
+    if (!matchesText) return false;
   }
 
   return true;
@@ -201,6 +213,30 @@ export class InMemoryOpportunityRepository implements OpportunityRepository {
   }
 }
 
+async function safeAtomicRename(tempFile: string, targetFile: string): Promise<void> {
+  let lastErr: unknown;
+  for (let i = 0; i < 5; i++) {
+    try {
+      await fs.rename(tempFile, targetFile);
+      return;
+    } catch (err: unknown) {
+      lastErr = err;
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code === 'EPERM' || code === 'EBUSY') {
+        await new Promise((res) => setTimeout(res, 30 * (i + 1)));
+      } else {
+        throw err;
+      }
+    }
+  }
+  try {
+    await fs.copyFile(tempFile, targetFile);
+    await fs.unlink(tempFile).catch(() => {});
+  } catch {
+    throw lastErr;
+  }
+}
+
 /**
  * JSON file-backed Opportunity repository with atomic write-and-rename guarantees.
  */
@@ -253,7 +289,7 @@ export class FileOpportunityRepository implements OpportunityRepository {
       `.tmp-${path.basename(this.filePath)}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     );
     await fs.writeFile(tempFile, content, 'utf-8');
-    await fs.rename(tempFile, this.filePath);
+    await safeAtomicRename(tempFile, this.filePath);
   }
 
   async findById(id: string): Promise<Opportunity | null> {

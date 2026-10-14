@@ -16,6 +16,7 @@ import { BlueskyProvider } from '../providers/bluesky-provider.js';
 import { DefaultAiDraftProvider } from '../providers/default-ai-draft-provider.js';
 import { DemoProvider } from '../providers/demo-provider.js';
 import { HackerNewsProvider } from '../providers/hacker-news-provider.js';
+import { MockDraftProvider } from '../providers/mock-draft-provider.js';
 import { RedditProvider } from '../providers/reddit-provider.js';
 import { RssFeedProvider } from '../providers/rss-feed-provider.js';
 import { OpportunityService } from '../services/opportunity-service.js';
@@ -87,7 +88,12 @@ export class ColdReachApiServer {
     this.pipelineService =
       options?.pipelineService ?? new PipelineService(this.opportunityRepository);
 
-    this.draftProvider = options?.draftProvider ?? new DefaultAiDraftProvider();
+    this.draftProvider =
+      options?.draftProvider ??
+      (process.env.ENABLE_MOCK_DRAFT?.trim() === 'true' ||
+      process.env.MOCK_AI_DRAFT?.trim() === 'true'
+        ? new MockDraftProvider()
+        : new DefaultAiDraftProvider());
     this.replyDraftingService =
       options?.replyDraftingService ??
       new ReplyDraftingService({
@@ -131,7 +137,7 @@ export class ColdReachApiServer {
     );
 
     // 3. Query Expansion & Search Routes
-    this.router.post('/api/query-expansion', async (ctx: RequestContext) => {
+    const handleQueryExpansion = async (ctx: RequestContext) => {
       const body = (ctx.body ?? {}) as { profileId?: string; profile?: ProductProfile };
       let profile: ProductProfile | null = body.profile ?? null;
       if (!profile && body.profileId) {
@@ -145,7 +151,10 @@ export class ColdReachApiServer {
         throw new ProfileNotFoundError('No product profile found for query expansion.');
       }
       return QueryExpansionEngine.expand(profile);
-    });
+    };
+
+    this.router.post('/api/query-expansion', handleQueryExpansion);
+    this.router.post('/api/profiles/expand-query', handleQueryExpansion);
 
     this.router.get('/api/providers', async () => {
       return [
@@ -194,9 +203,10 @@ export class ColdReachApiServer {
       ];
     });
 
-    this.router.post('/api/conversations/search', async (ctx: RequestContext) => {
+    const handleSearch = async (ctx: RequestContext) => {
       const body = (ctx.body ?? {}) as {
         provider?: 'demo' | 'hacker-news' | 'bluesky' | 'reddit' | 'rss';
+        forceDemo?: boolean;
         queryTerms?: string[];
         query?: string;
         excludedTopics?: string[];
@@ -205,7 +215,17 @@ export class ColdReachApiServer {
         offset?: number;
       };
 
-      const providerId = body.provider ?? 'demo';
+      let providerId = body.provider;
+      if (!providerId) {
+        if (body.forceDemo === true) {
+          providerId = 'demo';
+        } else if (body.forceDemo === false) {
+          providerId = 'hacker-news';
+        } else {
+          providerId = 'demo';
+        }
+      }
+
       const searchInput: SearchInput = {
         queryTerms: body.queryTerms,
         query: body.query,
@@ -235,7 +255,10 @@ export class ColdReachApiServer {
           break;
       }
       return result;
-    });
+    };
+
+    this.router.post('/api/conversations/search', handleSearch);
+    this.router.post('/api/search', handleSearch);
 
     // 4. Opportunities List & Detail
     this.router.get('/api/opportunities', async (ctx: RequestContext) => {
@@ -251,6 +274,7 @@ export class ColdReachApiServer {
       const provenance = query.provenance as SourceProvenance | undefined;
       const startDate = query.startDate as string | undefined;
       const endDate = query.endDate as string | undefined;
+      const search = query.search as string | undefined;
 
       const page = query.page ? Math.max(1, parseInt(query.page as string, 10)) : 1;
       const pageSize = query.pageSize
@@ -266,6 +290,7 @@ export class ColdReachApiServer {
         platform,
         provenance,
         dateRange: startDate || endDate ? { startDate, endDate } : undefined,
+        search,
       });
 
       const totalItems = all.length;
@@ -295,7 +320,7 @@ export class ColdReachApiServer {
 
     this.router.post('/api/opportunities/attribute', async (ctx: RequestContext) => {
       const body = (ctx.body ?? {}) as {
-        candidate: ConversationItem;
+        candidate: ConversationItem | { conversation: ConversationItem };
         profile?: ProductProfile;
         profileId?: string;
         queryTerms?: string[];
@@ -317,16 +342,21 @@ export class ColdReachApiServer {
         body.queryTerms ??
         QueryExpansionEngine.getActiveTermStrings(QueryExpansionEngine.expand(profile));
 
+      const candidate: ConversationItem =
+        body.candidate && 'conversation' in body.candidate
+          ? body.candidate.conversation
+          : (body.candidate as ConversationItem);
+
       return this.opportunityService.attributeOpportunity({
         profile,
-        candidate: body.candidate,
+        candidate,
         queryTerms,
       });
     });
 
     this.router.post('/api/opportunities/attribute-batch', async (ctx: RequestContext) => {
       const body = (ctx.body ?? {}) as {
-        candidates: ConversationItem[];
+        candidates: Array<ConversationItem | { conversation: ConversationItem }>;
         profile?: ProductProfile;
         profileId?: string;
         queryTerms?: string[];
@@ -348,9 +378,14 @@ export class ColdReachApiServer {
         body.queryTerms ??
         QueryExpansionEngine.getActiveTermStrings(QueryExpansionEngine.expand(profile));
 
+      const rawCandidates = body.candidates ?? [];
+      const candidates: ConversationItem[] = rawCandidates.map((c) =>
+        'conversation' in c ? c.conversation : c,
+      );
+
       return this.opportunityService.attributeBatch({
         profile,
-        candidates: body.candidates ?? [],
+        candidates,
         queryTerms,
       });
     });
@@ -401,12 +436,15 @@ export class ColdReachApiServer {
       return { permalink };
     });
 
-    this.router.get('/api/opportunities/:id/copy', async (ctx: RequestContext) => {
+    const handleCopyDraft = async (ctx: RequestContext) => {
       const includeNote = ctx.query.includeTransparencyNote !== 'false';
       return this.replyDraftingService.copyDraft(ctx.params.id!, {
         includeTransparencyNote: includeNote,
       });
-    });
+    };
+
+    this.router.get('/api/opportunities/:id/copy', handleCopyDraft);
+    this.router.get('/api/opportunities/:id/copy-payload', handleCopyDraft);
 
     // 6. Status Transitions, Manual Response Auditing & Pipeline Metrics
     this.router.post('/api/opportunities/:id/status', async (ctx: RequestContext) => {
