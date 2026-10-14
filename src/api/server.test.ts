@@ -370,5 +370,48 @@ describe('Phase 7: API Integration for the Stitch Frontend', () => {
         expect(metrics.auditSummary.manualExternalPostMethodCount).toBe(1);
       });
     });
+
+    describe('Static Asset Serving & Frontend SPA Routing', () => {
+      it('serves index.html at root route GET /', async () => {
+        const res = await fetch(`${serverUrl}/`);
+        expect(res.status).toBe(200);
+        expect(res.headers.get('content-type')).toContain('text/html');
+        const text = await res.text();
+        expect(text).toContain('ColdReach');
+        expect(text).toContain('view-chat');
+        expect(text).toContain('view-dashboard');
+        expect(text).toContain('view-opportunities');
+        expect(text).toContain('view-product-profile');
+        expect(text).toContain('view-analytics');
+        expect(text).toContain('view-settings');
+      });
+
+      it('serves static assets with appropriate content-type headers', async () => {
+        const cssRes = await fetch(`${serverUrl}/styles.css`);
+        expect(cssRes.status).toBe(200);
+        expect(cssRes.headers.get('content-type')).toContain('text/css');
+
+        const jsRes = await fetch(`${serverUrl}/app.js`);
+        expect(jsRes.status).toBe(200);
+        expect(jsRes.headers.get('content-type')).toContain('javascript');
+      });
+
+      it('falls back to index.html for non-API client routes (SPA routing)', async () => {
+        const spaRes = await fetch(`${serverUrl}/chat`);
+        expect(spaRes.status).toBe(200);
+        expect(spaRes.headers.get('content-type')).toContain('text/html');
+        const text = await spaRes.text();
+        expect(text).toContain('ColdReach');
+      });
+
+      it('preserves strict 404 JSON response for unknown /api/* endpoints', async () => {
+        const apiRes = await fetch(`${serverUrl}/api/does-not-exist`);
+        expect(apiRes.status).toBe(404);
+        expect(apiRes.headers.get('content-type')).toContain('application/json');
+        const json = await apiRes.json();
+        expect(json.success).toBe(false);
+        expect(json.error.code).toBe('NOT_FOUND');
+      });
+    });
   });
 });

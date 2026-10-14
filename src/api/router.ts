@@ -1,4 +1,6 @@
+import fs from 'node:fs';
 import { IncomingMessage, ServerResponse } from 'node:http';
+import path from 'node:path';
 import { ZodError } from 'zod';
 import {
   AuditImmutabilityError,
@@ -32,11 +34,13 @@ interface RouteDefinition {
 
 export interface RouterOptions {
   allowedOrigins?: string[];
+  staticDir?: string;
 }
 
 export class Router {
   private readonly routes: RouteDefinition[] = [];
   private readonly allowedOrigins: string[];
+  private readonly staticDir?: string;
 
   constructor(options?: RouterOptions) {
     this.allowedOrigins = options?.allowedOrigins ?? [
@@ -45,6 +49,7 @@ export class Router {
       'http://127.0.0.1:3000',
       'http://127.0.0.1:5173',
     ];
+    this.staticDir = options?.staticDir;
   }
 
   add(method: HttpMethod, pathPattern: string, handler: RouteHandler): void {
@@ -142,6 +147,40 @@ export class Router {
     }
 
     if (!matchedRoute) {
+      if (method === 'GET' && this.staticDir && !pathname.startsWith('/api')) {
+        const safePath = path.normalize(pathname).replace(/^(\.\.[/\\])+/, '');
+        let filePath = path.join(this.staticDir, safePath);
+        if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+          filePath = path.join(filePath, 'index.html');
+        }
+        if (!fs.existsSync(filePath)) {
+          const fallback = path.join(this.staticDir, 'index.html');
+          if (fs.existsSync(fallback)) {
+            filePath = fallback;
+          }
+        }
+        if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+          const ext = path.extname(filePath).toLowerCase();
+          const mimeTypes: Record<string, string> = {
+            '.html': 'text/html; charset=utf-8',
+            '.css': 'text/css; charset=utf-8',
+            '.js': 'application/javascript; charset=utf-8',
+            '.json': 'application/json; charset=utf-8',
+            '.svg': 'image/svg+xml',
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.ico': 'image/x-icon',
+            '.woff2': 'font/woff2',
+            '.woff': 'font/woff',
+          };
+          const contentType = mimeTypes[ext] ?? 'application/octet-stream';
+          res.writeHead(200, { 'Content-Type': contentType });
+          fs.createReadStream(filePath).pipe(res);
+          return;
+        }
+      }
+
       this.sendError(res, 404, 'NOT_FOUND', `Cannot ${method} ${pathname}`);
       return;
     }

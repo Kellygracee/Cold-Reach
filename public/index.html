@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="web_dashboard" name="shell-type"/>
+  <title>ColdReach - Intent & Conversation Discovery</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  
+  <link rel="stylesheet" href="/styles.css"/>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "background": "#fff8f3",
+            "secondary-fixed-dim": "#8fd0e4",
+            "on-tertiary-container": "#9bd9c4",
+            "surface": "#fff8f3",
+            "surface-container-low": "#faf2ec",
+            "inverse-primary": "#8bd1e8",
+            "secondary": "#1d6778",
+            "error-container": "#ffdad6",
+            "error": "#ba1a1a",
+            "on-error": "#ffffff",
+            "primary-fixed": "#b2ebff",
+            "on-error-container": "#93000a",
+            "surface-variant": "#e8e1db",
+            "on-secondary-fixed-variant": "#004e5d",
+            "primary-fixed-dim": "#8bd1e8",
+            "tertiary-fixed-dim": "#95d3be",
+            "on-surface": "#1e1b18",
+            "on-secondary": "#ffffff",
+            "surface-dim": "#e0d9d3",
+            "surface-container-highest": "#e8e1db",
+            "surface-container": "#f4ede7",
+            "surface-bright": "#fff8f3",
+            "tertiary-fixed": "#b0efda",
+            "tertiary-container": "#226150",
+            "on-secondary-fixed": "#001f27",
+            "outline-variant": "#bfc8cc",
+            "surface-container-lowest": "#ffffff",
+            "surface-tint": "#13677b",
+            "on-tertiary-fixed-variant": "#0b5040",
+            "on-primary-fixed-variant": "#004e5f",
+            "outline": "#6f797c",
+            "on-primary": "#ffffff",
+            "inverse-surface": "#33302c",
+            "secondary-fixed": "#afecff",
+            "on-primary-container": "#91d7ee",
+            "primary": "#004655",
+            "primary-container": "#005f73",
+            "secondary-container": "#a8eafe",
+            "on-primary-fixed": "#001f27",
+            "tertiary": "#00493a",
+            "surface-container-high": "#eee7e1",
+            "on-tertiary": "#ffffff",
+            "on-surface-variant": "#3f484c",
+            "on-background": "#1e1b18",
+            "on-tertiary-fixed": "#002018",
+            "inverse-on-surface": "#f7efe9",
+            "on-secondary-container": "#236b7c"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "margin": "2rem",
+            "margin-sm": "1rem",
+            "space-xs": "0.25rem",
+            "gutter": "1.5rem",
+            "space-xl": "2rem",
+            "space-lg": "1.5rem",
+            "space-sm": "0.5rem",
+            "gutter-sm": "1rem",
+            "space-md": "1rem"
+          },
+          fontFamily: {
+            "headline-md": ["Manrope"],
+            "headline-lg-mobile": ["Manrope"],
+            "body-lg": ["Manrope"],
+            "headline-sm": ["Manrope"],
+            "title-md": ["Manrope"],
+            "label-md": ["Manrope"],
+            "title-sm": ["Manrope"],
+            "body-md": ["Manrope"],
+            "label-sm": ["Manrope"],
+            "headline-lg": ["Manrope"],
+            "label-lg": ["Manrope"],
+            "display-lg": ["Manrope"],
+            "body-sm": ["Manrope"]
+          },
+          fontSize: {
+            "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+            "headline-lg-mobile": ["26px", { "lineHeight": "34px", "fontWeight": "700" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "title-md": ["16px", { "lineHeight": "24px", "fontWeight": "600" }],
+            "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+            "title-sm": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "label-sm": ["10px", { "lineHeight": "14px", "fontWeight": "700" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+            "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+            "display-lg": ["40px", { "lineHeight": "48px", "fontWeight": "700" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }]
+          }
+        }
+      }
+    };
+  </script>
+</head>
+
+<body class="bg-surface font-body-md text-body-md text-on-surface">
+  <!-- Stitch Left Sidebar -->
+  <aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+    <div class="flex flex-col">
+      <div class="h-16 px-space-lg flex items-center gap-space-sm cursor-pointer" onclick="window.location.hash='#dashboard'">
+        <div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary flex items-center justify-center font-bold neu-raised-sm">
+          <span class="material-symbols-outlined text-[20px]">radar</span>
+        </div>
+        <div class="flex flex-col ml-space-xs">
+          <span class="font-title-md text-title-md text-on-surface leading-tight tracking-tight">ColdReach</span>
+          <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Conversation Discovery</span>
+        </div>
+      </div>
+
+      <div class="px-space-md mt-space-sm mb-space-md">
+        <div class="flex items-center h-10 px-space-md rounded-lg bg-surface-container neu-inset">
+          <span class="material-symbols-outlined text-[18px] text-outline mr-space-xs">search</span>
+          <input id="globalSearchInput" class="w-full bg-transparent border-none outline-none font-body-sm text-body-sm text-on-surface placeholder:text-outline" placeholder="Discovery search (⌘K)..." type="text"/>
+        </div>
+      </div>
+
+      <nav class="flex flex-col gap-space-xs px-space-md" data-active-classes="bg-primary-container text-on-primary font-title-sm neu-pill-active rounded-full">
+        <a class="flex items-center justify-between px-space-md py-space-sm rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="chat" href="#chat">
+          <div class="flex items-center gap-space-sm">
+            <span class="material-symbols-outlined text-[20px]">chat</span>
+            <span class="font-title-sm text-title-sm">Chat</span>
+          </div>
+        </a>
+
+        <a aria-current="page" class="flex items-center justify-between px-space-md py-space-sm transition-all bg-primary-container text-on-primary font-title-sm neu-pill-active rounded-full" data-path="dashboard" href="#dashboard">
+          <div class="flex items-center gap-space-sm">
+            <span class="material-symbols-outlined text-[20px]">dashboard</span>
+            <span class="font-title-sm text-title-sm">Dashboard</span>
+          </div>
+        </a>
+
+        <a class="flex items-center justify-between px-space-md py-space-sm rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="opportunities" href="#opportunities">
+          <div class="flex items-center gap-space-sm">
+            <span class="material-symbols-outlined text-[20px]">radar</span>
+            <span class="font-title-sm text-title-sm">Opportunities</span>
+          </div>
+          <span id="sidebarOpportunitiesBadge" class="px-space-xs py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">0</span>
+        </a>
+
+        <a class="flex items-center justify-between px-space-md py-space-sm rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="product-profile" href="#product-profile">
+          <div class="flex items-center gap-space-sm">
+            <span class="material-symbols-outlined text-[20px]">badge</span>
+            <span class="font-title-sm text-title-sm">Product Profile</span>
+          </div>
+        </a>
+
+        <a class="flex items-center justify-between px-space-md py-space-sm rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="analytics" href="#analytics">
+          <div class="flex items-center gap-space-sm">
+            <span class="material-symbols-outlined text-[20px]">bar_chart</span>
+            <span class="font-title-sm text-title-sm">Analytics</span>
+          </div>
+        </a>
+
+        <a class="flex items-center justify-between px-space-md py-space-sm rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#settings">
+          <div class="flex items-center gap-space-sm">
+            <span class="material-symbols-outlined text-[20px]">settings</span>
+            <span class="font-title-sm text-title-sm">Settings</span>
+          </div>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Sidebar Bottom Controls -->
+    <div class="p-space-md flex flex-col gap-space-md">
+      <div class="p-space-sm rounded-xl bg-surface-container neu-raised flex items-center justify-between">
+        <div class="flex items-center gap-space-xs">
+          <span class="w-2 h-2 rounded-full bg-tertiary-container animate-pulse"></span>
+          <span class="font-label-md text-label-md text-on-surface">Pipeline Mode</span>
+        </div>
+        <div class="flex items-center p-0.5 rounded-full bg-surface-container-highest neu-inset">
+          <button id="sidebarModeLive" class="px-space-xs py-0.5 rounded-full font-label-sm text-label-sm text-on-surface-variant transition-all" type="button">Live</button>
+          <button id="sidebarModeDemo" class="px-space-xs py-0.5 rounded-full font-label-sm text-label-sm bg-primary-container text-on-primary shadow-sm transition-all" type="button">Demo</button>
+        </div>
+      </div>
+
+      <div class="p-space-sm rounded-xl bg-surface-container neu-raised flex items-center justify-between">
+        <div class="flex items-center gap-space-xs text-on-surface-variant">
+          <span class="material-symbols-outlined text-[18px]">light_mode</span>
+          <span class="font-label-md text-label-md text-on-surface">Appearance</span>
+        </div>
+        <button id="sidebarAppearanceToggle" aria-label="Toggle Appearance Mode" class="w-11 h-6 rounded-full bg-surface-container-highest neu-inset p-0.5 flex items-center cursor-pointer" type="button">
+          <div class="w-5 h-5 rounded-full bg-surface-container-lowest neu-raised-sm flex items-center justify-center">
+            <span class="material-symbols-outlined text-[12px] text-on-surface">wb_sunny</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Top Header Bar -->
+  <div class="pl-72">
+    <header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-lg">
+      <div class="flex items-center gap-space-md">
+        <div class="flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant">
+          <span class="hover:text-on-surface transition-colors cursor-pointer" onclick="window.location.hash='#dashboard'">Projects</span>
+          <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+          <div class="flex items-center gap-space-xs px-space-sm py-0.5 rounded-full bg-surface-container neu-raised-sm text-primary font-title-sm text-title-sm">
+            <span class="material-symbols-outlined text-[16px]">corporate_fare</span>
+            <span class="profile-name-label">FormBridge SaaS</span>
+          </div>
+          <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+          <span id="headerBreadcrumbCurrent" class="text-on-surface font-title-sm">Mission Control</span>
+        </div>
+
+        <div class="hidden md:flex items-center gap-space-xs">
+          <span id="headerModeBadge" class="px-space-sm py-0.5 rounded-full bg-surface-container neu-raised-sm text-secondary font-label-sm text-label-sm flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>Demo: Hybrid Live
+          </span>
+          <span class="px-space-sm py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm flex items-center gap-1">
+            <span class="material-symbols-outlined text-[12px]">tune</span>Audience Calibrated
+          </span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-space-md">
+        <button aria-label="Notifications" class="w-9 h-9 rounded-full bg-surface-container neu-raised-sm flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" type="button" onclick="window.coldReachApp.showToast('All notifications clear', 'info')">
+          <span class="material-symbols-outlined text-[20px]">notifications</span>
+        </button>
+        <button aria-label="Documentation Help" class="w-9 h-9 rounded-full bg-surface-container neu-raised-sm flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" type="button" onclick="window.open('/api/openapi.json', '_blank')">
+          <span class="material-symbols-outlined text-[20px]">help_outline</span>
+        </button>
+        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center neu-raised-sm cursor-pointer" onclick="window.location.hash='#settings'">
+          <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area Mounts 6 Views -->
+    <main class="w-full pt-16 px-space-lg bg-surface min-h-screen">
+      
+      <!-- VIEW 1: AGENT CHAT -->
+      <div id="view-chat" class="view-container">
+        <div class="grid grid-cols-12 gap-space-lg w-full max-w-[1400px] mx-auto pb-space-xl pt-space-md">
+          <!-- Left 8 cols: Dialogue & Intelligence Feed -->
+          <div class="col-span-12 xl:col-span-8 flex flex-col gap-space-lg">
+            <!-- Header Status Bar -->
+            <div class="bg-surface-container rounded-xl p-space-md neu-raised flex flex-wrap items-center justify-between gap-space-md">
+              <div class="flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant flex-wrap">
+                <span>Projects</span>
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                <span class="text-on-surface font-title-sm profile-name-label">FormBridge SaaS</span>
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                <span class="px-space-xs py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm">Discovery Stream #104</span>
+              </div>
+              <div class="flex items-center gap-space-sm flex-wrap">
+                <span class="px-space-sm py-1 rounded-full bg-surface-container-highest neu-inset font-label-sm text-on-surface flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-secondary"></span>Demo: Hybrid Live
+                </span>
+                <span class="px-space-sm py-1 rounded-full bg-surface-container neu-raised-sm font-label-sm text-primary flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[14px] text-tertiary">check_circle</span>Audience Calibrated
+                </span>
+              </div>
+            </div>
+
+            <!-- Dialogue Thread -->
+            <div id="chatDialogueThread" class="flex flex-col gap-space-lg">
+              <!-- Agent Greeting Bubble -->
+              <div class="flex items-start gap-space-md">
+                <div class="w-10 h-10 rounded-full bg-surface-container neu-raised flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-primary text-[22px]">radar</span>
+                </div>
+                <div class="flex-1 bg-surface-container-low rounded-xl p-space-md neu-raised max-w-2xl">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="font-title-sm text-title-sm text-primary">ColdReach Discovery Agent</span>
+                    <span class="font-label-sm text-label-sm text-outline">10:41 AM</span>
+                  </div>
+                  <p class="font-body-md text-body-md text-on-surface leading-relaxed">
+                    Welcome back. Let's configure intent discovery for your software. What product or service are we targeting, and what makes it distinct?
+                  </p>
+                </div>
+              </div>
+
+              <!-- User Initial Answer -->
+              <div class="flex items-start justify-end gap-space-md">
+                <div class="bg-surface-container-highest rounded-xl p-space-md neu-inset max-w-xl">
+                  <div class="flex items-center justify-end gap-space-xs mb-1">
+                    <span class="font-label-sm text-label-sm text-on-surface-variant">Growth Lead</span>
+                    <span class="font-label-sm text-label-sm text-outline">10:42 AM</span>
+                  </div>
+                  <p class="font-body-md text-body-md text-on-surface">
+                    A privacy-first form &amp; survey builder for B2B SaaS called <strong class="profile-name-label">FormBridge</strong> (<a class="text-primary underline" href="https://formbridge.io" target="_blank" rel="noopener noreferrer">formbridge.io</a>).
+                  </p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-surface-container neu-raised-sm flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-secondary text-[20px]">person</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Context Vector Profile Card -->
+            <div class="ml-14 bg-surface-container rounded-xl p-space-lg neu-raised flex flex-col gap-space-md">
+              <div class="flex items-center justify-between pb-space-xs">
+                <div class="flex items-center gap-space-sm">
+                  <div class="w-8 h-8 rounded-lg bg-surface-container-highest neu-inset flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-[18px]">domain_verification</span>
+                  </div>
+                  <div>
+                    <h2 class="font-title-md text-title-md text-on-surface">Context Vector Profile: <span class="profile-name-label">FormBridge</span></h2>
+                    <p class="font-label-sm text-label-sm text-outline">Refined via product scan and ICP metadata</p>
+                  </div>
+                </div>
+                <span class="px-space-xs py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm">Profile Synthesized</span>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+                <div class="flex flex-col gap-1 p-space-sm rounded-lg bg-surface-container-highest neu-inset">
+                  <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Core Problem Solved</span>
+                  <p class="font-body-md text-body-md text-on-surface font-medium">High drop-off in Typeform due to GDPR cookie barriers &amp; non-EU telemetry storage.</p>
+                </div>
+                <div class="flex flex-col gap-1 p-space-sm rounded-lg bg-surface-container-highest neu-inset">
+                  <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Target ICP Persona</span>
+                  <p class="font-body-md text-body-md text-on-surface font-medium">B2B Product Managers, Security Engineers &amp; Compliance Growth Marketers.</p>
+                </div>
+              </div>
+
+              <!-- Semantic Tokens & Negatives -->
+              <div class="flex flex-col gap-space-xs">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Trigger Semantic Keywords</span>
+                <div class="flex flex-wrap gap-space-xs">
+                  <span class="px-space-sm py-1 rounded-full bg-surface-container neu-raised-sm font-label-md text-label-md text-primary flex items-center gap-1">"Typeform alternative"</span>
+                  <span class="px-space-sm py-1 rounded-full bg-surface-container neu-raised-sm font-label-md text-label-md text-primary flex items-center gap-1">"GDPR compliant forms"</span>
+                  <span class="px-space-sm py-1 rounded-full bg-surface-container neu-raised-sm font-label-md text-label-md text-primary flex items-center gap-1">"self-hosted survey"</span>
+                  <button class="px-space-sm py-1 rounded-full bg-surface-container-highest neu-inset font-label-sm text-label-sm text-outline hover:text-on-surface cursor-pointer" type="button" onclick="window.location.hash='#product-profile'">+ Add Vector</button>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-space-xs">
+                <span class="font-label-sm text-label-sm text-error uppercase tracking-wider">Negative Constraints (Auto-Filtered)</span>
+                <div class="flex flex-wrap gap-space-xs">
+                  <span class="px-space-sm py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm flex items-center gap-1">"Job opening" <span class="material-symbols-outlined text-[12px]">remove_circle</span></span>
+                  <span class="px-space-sm py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm flex items-center gap-1">"Free tier hacks" <span class="material-symbols-outlined text-[12px]">remove_circle</span></span>
+                  <span class="px-space-sm py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm flex items-center gap-1">"Affiliate link" <span class="material-symbols-outlined text-[12px]">remove_circle</span></span>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between pt-space-xs flex-wrap gap-space-sm">
+                <div class="flex items-center gap-space-xs text-outline font-label-sm text-label-sm">
+                  <span class="material-symbols-outlined text-[16px]">lock</span>
+                  Strict manual dispatch: No automated posting or scraping bots.
+                </div>
+                <div class="flex items-center gap-space-sm">
+                  <button class="px-space-md py-space-sm rounded-full bg-surface-container neu-raised hover:bg-surface-container-high font-title-sm text-title-sm text-on-surface transition-all cursor-pointer" type="button" onclick="window.location.hash='#product-profile'">
+                    Edit Parameters
+                  </button>
+                  <button id="chatRunEngineBtn" class="px-space-lg py-space-sm rounded-full bg-primary-container text-on-primary font-title-sm text-title-sm neu-pill-active hover:brightness-105 active:scale-95 transition-all flex items-center gap-space-xs cursor-pointer" type="button">
+                    <span class="material-symbols-outlined text-[18px]">bolt</span>
+                    <span>Confirm &amp; Run Engine</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- In-Flight Synthesis Engine & Search Progress Matrix -->
+            <div id="chatSynthesisMatrix" class="hidden ml-14 bg-surface-container rounded-xl p-space-lg neu-raised flex flex-col gap-space-md">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-space-sm">
+                  <div class="w-8 h-8 rounded-full bg-surface-container-highest neu-inset flex items-center justify-center">
+                    <svg class="animate-spin w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="font-title-sm text-title-sm text-on-surface">Contextual Synthesis Engine Active</h3>
+                    <span class="font-label-sm text-label-sm text-outline">Real-time scan across enabled channel listeners</span>
+                  </div>
+                </div>
+                <span class="font-label-sm text-label-sm px-space-xs py-0.5 rounded-full bg-secondary-container text-on-secondary-container animate-pulse">Running Pulse</span>
+              </div>
+
+              <!-- Step Progression Well -->
+              <div class="flex flex-col gap-space-sm p-space-md rounded-lg bg-surface-container-highest neu-inset">
+                <div class="flex items-center justify-between text-on-surface font-title-sm text-title-sm">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[18px]">task_alt</span>
+                    <span>Synthesize product &amp; target persona parameters</span>
+                  </div>
+                  <span id="chatStep1Status" class="font-label-sm text-label-sm text-tertiary">Done</span>
+                </div>
+
+                <div class="flex items-center justify-between text-on-surface font-title-sm text-title-sm">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[18px]">task_alt</span>
+                    <span>Compile contextual trigger vector embeddings</span>
+                  </div>
+                  <span id="chatStep2Status" class="font-label-sm text-label-sm text-tertiary">Done</span>
+                </div>
+
+                <div class="flex flex-col gap-space-xs pt-1">
+                  <div class="flex items-center justify-between text-primary font-title-sm text-title-sm">
+                    <div class="flex items-center gap-2">
+                      <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+                      <span>Scanning monitored public developer &amp; founder communities...</span>
+                    </div>
+                    <span id="chatStep3Status" class="font-label-sm text-label-sm text-primary">In Flight</span>
+                  </div>
+
+                  <!-- Provider Feeds Matrix -->
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-xs mt-space-xs pl-5">
+                    <div class="flex items-center justify-between p-space-xs rounded bg-surface-container neu-raised-sm font-label-md text-label-md">
+                      <span class="text-on-surface-variant">Reddit Public API</span>
+                      <span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-bold">LIVE</span>
+                    </div>
+                    <div class="flex items-center justify-between p-space-xs rounded bg-surface-container neu-raised-sm font-label-md text-label-md">
+                      <span class="text-on-surface-variant">Hacker News Firebase</span>
+                      <span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-bold">LIVE</span>
+                    </div>
+                    <div class="flex items-center justify-between p-space-xs rounded bg-surface-container neu-raised-sm font-label-md text-label-md">
+                      <span class="text-on-surface-variant">Bluesky Firehose</span>
+                      <span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-bold">LIVE</span>
+                    </div>
+                    <div class="flex items-center justify-between p-space-xs rounded bg-surface-container neu-raised-sm font-label-md text-label-md opacity-60">
+                      <span class="text-on-surface-variant">LinkedIn Public Feeds</span>
+                      <span class="font-label-sm text-label-sm text-outline">AUTH REQ</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between text-outline font-title-sm text-title-sm pt-1">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">hourglass_empty</span>
+                    <span>Calculating high-intent scoring &amp; draft validation</span>
+                  </div>
+                  <span id="chatStep4Status" class="font-label-sm text-label-sm">Queued</span>
+                </div>
+              </div>
+
+              <!-- Linear Progress Bar -->
+              <div class="flex flex-col gap-1">
+                <div class="flex justify-between font-label-sm text-label-sm text-on-surface-variant">
+                  <span>Intent Vector Convergence</span>
+                  <span id="chatProgressPercent" class="font-semibold text-primary">68%</span>
+                </div>
+                <div class="h-2 w-full rounded-full bg-surface-container-highest neu-inset overflow-hidden p-0.5">
+                  <div id="chatProgressBar" class="h-full rounded-full bg-primary transition-all duration-300" style="width: 68%;"></div>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between pt-1">
+                <button id="chatPauseBtn" class="px-space-md py-1.5 rounded-full bg-surface-container neu-raised hover:bg-surface-container-high font-label-md text-label-md text-on-surface-variant transition-all cursor-pointer" type="button">
+                  Cancel Scan
+                </button>
+                <span class="font-label-sm text-label-sm text-outline flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">verified_user</span>
+                  100% human-in-the-loop review policy
+                </span>
+              </div>
+            </div>
+
+            <!-- Discovered Conversations Cards -->
+            <div class="flex flex-col gap-space-md pt-space-sm">
+              <div class="flex items-center justify-between">
+                <h2 class="font-headline-sm text-headline-sm text-on-surface">Discovered Conversations</h2>
+                <button class="font-label-sm text-label-sm text-secondary hover:text-primary" onclick="window.location.hash='#opportunities'">View All in Workspace →</button>
+              </div>
+              <div id="chatDiscoveredList">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Bottom Chat Input Bar -->
+            <div class="sticky bottom-4 z-30 bg-surface-container rounded-2xl p-space-sm neu-raised flex items-center gap-space-sm">
+              <button class="w-10 h-10 rounded-full bg-surface-container-highest neu-raised-sm flex items-center justify-center text-outline hover:text-primary transition-colors cursor-pointer" type="button" onclick="window.location.hash='#product-profile'" title="Tune Parameters">
+                <span class="material-symbols-outlined text-[20px]">tune</span>
+              </button>
+              <input id="chatMessageInput" class="flex-1 bg-transparent border-none outline-none font-body-md text-body-md text-on-surface placeholder:text-outline px-2" placeholder="Ask ColdReach to adjust discovery parameters, refine intent triggers, or scan a new community..." type="text"/>
+              <button id="chatSendBtn" class="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center neu-pill-active hover:brightness-105 active:scale-95 transition-all cursor-pointer" type="button" title="Send message">
+                <span class="material-symbols-outlined text-[20px]">arrow_upward</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right 4 cols: Live Signal Feed & Constraints -->
+          <div class="col-span-12 xl:col-span-4 flex flex-col gap-space-lg">
+            <div class="p-space-lg rounded-xl bg-surface-container neu-raised flex flex-col gap-space-md">
+              <h3 class="font-title-md text-title-md text-on-surface font-semibold">Intent Signal Summary</h3>
+              <div class="p-space-sm rounded-lg bg-surface-container-low neu-inset flex flex-col gap-1 font-body-sm text-body-sm">
+                <span class="text-on-surface-variant">Active Product</span>
+                <span class="font-bold text-on-surface profile-name-label">FormBridge</span>
+                <span class="text-on-surface-variant mt-1">Focus Wedge</span>
+                <span class="text-primary font-semibold">EU GDPR compliance, self-hosted webhooks</span>
+              </div>
+              <div class="flex items-center justify-between text-outline font-label-sm text-label-sm pt-1">
+                <span>Signal Precision: ~94%</span>
+                <span class="text-tertiary font-bold">100% Manual Dispatch</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 2: DASHBOARD -->
+      <div id="view-dashboard" class="view-container active">
+        <div class="flex flex-col w-full pb-16 pt-space-md">
+          <!-- Top Control Bar -->
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md mb-space-xl">
+            <div class="flex flex-col">
+              <div class="flex items-center gap-space-xs mb-1">
+                <span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+                <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-bold">Orchestration • Pipeline v2.4</span>
+              </div>
+              <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Mission Control &amp; Discovery Overview</h1>
+            </div>
+            <div class="flex items-center gap-space-md flex-wrap">
+              <div class="flex items-center gap-space-xs px-space-md py-2 rounded-full bg-surface-container neu-raised-sm cursor-pointer hover:bg-surface-container-high transition-colors">
+                <span class="material-symbols-outlined text-[18px] text-primary">calendar_today</span>
+                <span class="font-title-sm text-title-sm text-on-surface">Last 30 Days (Demo Batch)</span>
+              </div>
+              <button class="flex items-center gap-space-xs px-space-lg py-2.5 rounded-full bg-primary-container text-on-primary font-title-sm text-title-sm neu-pill-active hover:brightness-105 active:scale-[0.99] transition-all cursor-pointer" type="button" onclick="window.location.hash='#chat'">
+                <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+                <span>Initiate Discovery Scan</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 4-Column Tactile Metric Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-lg mb-space-xl">
+            <!-- Card 1 -->
+            <div class="p-space-lg rounded-xl bg-surface-container neu-raised flex flex-col justify-between relative overflow-hidden group hover:translate-y-[-2px] transition-transform">
+              <div class="flex items-center justify-between mb-space-md">
+                <span class="font-label-md text-label-md text-on-surface-variant font-semibold">Conversations Found</span>
+                <span class="px-space-xs py-0.5 rounded-full bg-surface-container-highest neu-inset font-label-sm text-label-sm text-on-surface-variant tracking-wider">PIPELINE</span>
+              </div>
+              <div class="flex items-baseline gap-space-sm mb-space-xs">
+                <span id="dashMetricFound" class="font-display-lg text-display-lg text-on-surface tracking-tight leading-none">0</span>
+                <span class="font-label-sm text-label-sm text-tertiary font-bold flex items-center">
+                  <span class="material-symbols-outlined text-[14px]">trending_up</span>+18%
+                </span>
+              </div>
+              <div class="flex items-center justify-between mt-space-sm pt-space-xs">
+                <span class="font-body-sm text-body-sm text-on-surface-variant">vs. previous cycle</span>
+                <svg class="w-16 h-5 text-secondary" fill="none" viewBox="0 0 64 20">
+                  <path d="M1 16 L14 11 L28 14 L42 6 L54 9 L63 2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="p-space-lg rounded-xl bg-surface-container neu-raised flex flex-col justify-between relative overflow-hidden group hover:translate-y-[-2px] transition-transform">
+              <div class="flex items-center justify-between mb-space-md">
+                <span class="font-label-md text-label-md text-on-surface-variant font-semibold">High-Relevance Opportunities</span>
+                <span class="px-space-xs py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold">Qualified</span>
+              </div>
+              <div class="flex items-baseline gap-space-sm mb-space-xs">
+                <span id="dashMetricHighMatch" class="font-display-lg text-display-lg text-primary tracking-tight leading-none">0</span>
+                <span class="px-space-xs py-0.5 rounded-md bg-surface-container-highest neu-inset font-label-sm text-label-sm text-secondary font-bold">&gt;70% Score</span>
+              </div>
+              <div class="flex items-center justify-between mt-space-sm pt-space-xs">
+                <span class="font-body-sm text-body-sm text-on-surface-variant">Vetted match threshold</span>
+                <div class="w-16 bg-surface-container-highest neu-inset h-2 rounded-full overflow-hidden">
+                  <div class="bg-primary h-full rounded-full" style="width: 82%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="p-space-lg rounded-xl bg-surface-container neu-raised flex flex-col justify-between relative overflow-hidden group hover:translate-y-[-2px] transition-transform">
+              <div class="flex items-center justify-between mb-space-md">
+                <span class="font-label-md text-label-md text-on-surface-variant font-semibold">Drafts Awaiting Review</span>
+                <span class="px-space-xs py-0.5 rounded-full bg-surface-container-highest text-on-surface font-label-sm text-label-sm neu-raised-sm flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-error"></span>Manual Req
+                </span>
+              </div>
+              <div class="flex items-baseline gap-space-sm mb-space-xs">
+                <span id="dashMetricDrafts" class="font-display-lg text-display-lg text-on-surface tracking-tight leading-none">0</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant">in queue</span>
+              </div>
+              <div class="flex items-center justify-between mt-space-sm pt-space-xs">
+                <span class="font-body-sm text-body-sm text-on-surface-variant">Ready for human eye</span>
+                <span class="material-symbols-outlined text-[18px] text-outline">pending_actions</span>
+              </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="p-space-lg rounded-xl bg-surface-container neu-raised flex flex-col justify-between relative overflow-hidden group hover:translate-y-[-2px] transition-transform">
+              <div class="flex items-center justify-between mb-space-md">
+                <span class="font-label-md text-label-md text-on-surface-variant font-semibold">Manually Dispatched</span>
+                <span class="px-space-xs py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-label-sm font-bold flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[13px]">verified_user</span>Clean Policy
+                </span>
+              </div>
+              <div class="flex items-baseline gap-space-sm mb-space-xs">
+                <span id="dashMetricDispatched" class="font-display-lg text-display-lg text-tertiary-container tracking-tight leading-none">0</span>
+                <span class="font-label-sm text-label-sm text-tertiary font-bold flex items-center">
+                  <span class="material-symbols-outlined text-[14px]">front_hand</span>100% HITL
+                </span>
+              </div>
+              <div class="flex items-center justify-between mt-space-sm pt-space-xs">
+                <span class="font-body-sm text-body-sm text-on-surface-variant">App dispatched count: 0</span>
+                <span class="material-symbols-outlined text-[18px] text-tertiary">check_circle</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl">
+            <!-- Left 8 cols -->
+            <div class="lg:col-span-8 flex flex-col gap-space-xl">
+              <!-- Discovery Trends -->
+              <div class="p-space-lg rounded-xl bg-surface-container neu-raised flex flex-col">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-lg">
+                  <div>
+                    <h2 class="font-title-md text-title-md text-on-surface font-semibold">Opportunity Discovery Trends</h2>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant">Volume tracking across Reddit, Hacker News, Bluesky &amp; Feeds</p>
+                  </div>
+                  <div class="flex items-center gap-space-md font-label-sm text-label-sm text-on-surface-variant">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-3.5 h-1 rounded-full bg-primary-container"></span>
+                      <span class="font-semibold text-on-surface">Qualified Opportunities</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="w-full h-64 p-space-md rounded-xl bg-surface-container-low neu-inset relative flex items-end">
+                  <svg class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 600 220">
+                    <defs>
+                      <linearGradient id="primaryAreaGrad" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stop-color="#005F73" stop-opacity="0.28"></stop>
+                        <stop offset="100%" stop-color="#005F73" stop-opacity="0.0"></stop>
+                      </linearGradient>
+                    </defs>
+                    <line stroke="#E0D9D3" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="600" y1="40" y2="40"></line>
+                    <line stroke="#E0D9D3" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="600" y1="100" y2="100"></line>
+                    <line stroke="#E0D9D3" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="600" y1="160" y2="160"></line>
+                    <path d="M 0 195 Q 75 180 150 145 T 300 120 T 450 78 T 600 55 L 600 220 L 0 220 Z" fill="url(#primaryAreaGrad)"></path>
+                    <path d="M 0 195 Q 75 180 150 145 T 300 120 T 450 78 T 600 55" fill="none" stroke="#005F73" stroke-width="3"></path>
+                    <circle cx="450" cy="78" fill="#005F73" r="5" stroke="#FFF8F3" stroke-width="2"></circle>
+                    <circle cx="600" cy="55" fill="#005F73" r="5" stroke="#FFF8F3" stroke-width="2"></circle>
+                  </svg>
+                  <div class="absolute bottom-1.5 left-4 right-4 flex justify-between font-label-sm text-label-sm text-outline">
+                    <span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Today</span>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-space-md mt-space-md pt-space-xs text-center">
+                  <div class="p-space-sm rounded-lg bg-surface-container-high neu-inset">
+                    <span class="font-label-sm text-label-sm text-on-surface-variant block">Reddit Fit</span>
+                    <span class="font-title-sm text-title-sm text-primary font-bold">High</span>
+                  </div>
+                  <div class="p-space-sm rounded-lg bg-surface-container-high neu-inset">
+                    <span class="font-label-sm text-label-sm text-on-surface-variant block">HN Fit</span>
+                    <span class="font-title-sm text-title-sm text-primary font-bold">Verified</span>
+                  </div>
+                  <div class="p-space-sm rounded-lg bg-surface-container-high neu-inset">
+                    <span class="font-label-sm text-label-sm text-on-surface-variant block">Bluesky Fit</span>
+                    <span class="font-title-sm text-title-sm text-primary font-bold">Active</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tasks Needing Human Review -->
+              <div class="p-space-lg rounded-xl bg-surface-container neu-raised flex flex-col">
+                <div class="flex items-center justify-between mb-space-md">
+                  <div class="flex items-center gap-space-sm">
+                    <div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container neu-raised-sm flex items-center justify-center">
+                      <span class="material-symbols-outlined text-[18px]">rate_review</span>
+                    </div>
+                    <div>
+                      <h2 class="font-title-md text-title-md text-on-surface font-semibold">Tasks Needing Human Review</h2>
+                      <p class="font-body-sm text-body-sm text-on-surface-variant">Contextual drafts prepared for personal outreach</p>
+                    </div>
+                  </div>
+                  <button class="px-space-md py-1 rounded-full bg-surface-container-high neu-raised-sm font-label-md text-label-md text-on-surface hover:bg-surface-variant transition-colors cursor-pointer" type="button" onclick="window.location.hash='#opportunities'">
+                    View All
+                  </button>
+                </div>
+
+                <div id="dashboardTasksList" class="flex flex-col gap-space-md">
+                  <!-- Dynamically populated -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Right 4 cols -->
+            <div class="lg:col-span-4 flex flex-col gap-space-xl">
+              <!-- Monitored Sources Health Card -->
+              <div class="p-space-lg rounded-xl bg-surface-container neu-raised flex flex-col">
+                <div class="flex items-center justify-between mb-space-md">
+                  <div class="flex items-center gap-space-xs">
+                    <span class="material-symbols-outlined text-[20px] text-primary">sensors</span>
+                    <h3 class="font-title-md text-title-md text-on-surface font-semibold">Monitored Sources</h3>
+                  </div>
+                  <span class="px-space-xs py-0.5 rounded-full bg-surface-container-highest neu-inset font-label-sm text-label-sm text-on-surface-variant">API Active</span>
+                </div>
+
+                <div id="dashboardSourcesList" class="flex flex-col gap-space-sm">
+                  <!-- Dynamically populated -->
+                </div>
+
+                <button class="mt-space-md w-full py-2 rounded-full bg-surface-container neu-raised-sm font-title-sm text-title-sm text-secondary hover:text-primary transition-colors flex items-center justify-center gap-1 cursor-pointer" type="button" onclick="window.location.hash='#settings'">
+                  <span class="material-symbols-outlined text-[16px]">tune</span>
+                  <span>Configure Ingestion Rules</span>
+                </button>
+              </div>
+
+              <!-- Human In The Loop Policy Banner -->
+              <div class="p-space-md rounded-xl bg-tertiary-container text-on-tertiary flex items-start gap-space-sm shadow-sm">
+                <span class="material-symbols-outlined text-[24px] text-tertiary-fixed-dim flex-shrink-0">shield</span>
+                <div class="flex flex-col">
+                  <span class="font-title-sm text-title-sm font-bold text-on-tertiary leading-tight">Human-in-the-Loop Policy</span>
+                  <span class="font-body-sm text-body-sm text-on-tertiary-container mt-0.5">
+                    ColdReach discovery engines do not dispatch automated replies or post via headless bots. Every reply requires explicit human review and dispatch.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 3: OPPORTUNITIES MASTER-DETAIL -->
+      <div id="view-opportunities" class="view-container">
+        <div class="flex flex-col w-full pb-space-xl pt-space-md">
+          <!-- Top Control Ribbon -->
+          <header class="w-full bg-surface-container rounded-2xl p-space-md neu-raised mb-space-lg flex flex-col gap-space-md">
+            <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-space-md">
+              <div class="relative flex-1 flex items-center h-12 px-space-md rounded-xl bg-surface-container-high neu-inset">
+                <span class="material-symbols-outlined text-outline text-[22px] mr-space-sm select-none">manage_search</span>
+                <input id="opportunitySearchInput" class="w-full bg-transparent border-none outline-none font-body-md text-body-md text-on-surface placeholder:text-outline" placeholder="Search opportunities by keyword, pain point, username..." type="text"/>
+                <div class="flex items-center gap-space-xs text-outline font-label-sm text-label-sm bg-surface-container px-2 py-0.5 rounded neu-raised-sm hidden sm:flex">
+                  <span>⌘K</span>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-space-md justify-between lg:justify-end">
+                <div class="flex items-center gap-space-xs bg-surface-container-highest px-space-sm py-1 rounded-full neu-inset">
+                  <span class="font-label-sm text-label-sm text-on-surface-variant font-semibold pl-1 select-none">PROVENANCE:</span>
+                  <span class="font-label-sm text-label-sm text-primary font-bold pr-1 select-none">DEMO &amp; LIVE</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Row: Filter Tabs -->
+            <div class="flex items-center justify-between overflow-x-auto pb-1 -mb-1">
+              <div id="opportunityFilterTabs" class="p-1 rounded-full bg-surface-container-high neu-inset flex items-center gap-1">
+                <button data-tab="ALL" class="px-space-md py-1.5 rounded-full bg-surface-container neu-raised text-primary font-title-sm text-title-sm flex items-center gap-space-xs cursor-pointer">
+                  <span>All</span>
+                </button>
+                <button data-tab="HIGH_FIT" class="px-space-md py-1.5 rounded-full text-on-surface-variant hover:text-on-surface font-title-sm text-title-sm flex items-center gap-space-xs transition-colors cursor-pointer">
+                  <span>High Fit (90%+)</span>
+                </button>
+                <button data-tab="PENDING" class="px-space-md py-1.5 rounded-full text-on-surface-variant hover:text-on-surface font-title-sm text-title-sm flex items-center gap-space-xs transition-colors cursor-pointer">
+                  <span>Pending Review</span>
+                </button>
+                <button data-tab="SAVED" class="px-space-md py-1.5 rounded-full text-on-surface-variant hover:text-on-surface font-title-sm text-title-sm flex items-center gap-space-xs transition-colors cursor-pointer">
+                  <span>Reviewed</span>
+                </button>
+                <button data-tab="ARCHIVED" class="px-space-md py-1.5 rounded-full text-on-surface-variant hover:text-on-surface font-title-sm text-title-sm flex items-center gap-space-xs transition-colors cursor-pointer">
+                  <span>Archived</span>
+                </button>
+              </div>
+
+              <div class="hidden xl:flex items-center gap-space-sm font-label-sm text-label-sm text-on-surface-variant">
+                <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container neu-raised-sm">
+                  <span class="w-2 h-2 rounded-full bg-tertiary-container animate-pulse"></span>
+                  <span class="font-semibold text-tertiary">Realtime Stream Active</span>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <!-- Master-Detail 2-Column Split -->
+          <div class="grid grid-cols-12 gap-space-lg items-start">
+            <!-- Left 5 cols: Master List -->
+            <div class="col-span-12 lg:col-span-5 flex flex-col gap-space-md">
+              <div class="flex items-center justify-between px-space-xs">
+                <span id="oppLeadsCountLabel" class="font-label-md text-label-md uppercase tracking-wider text-outline font-bold">Discovered Leads &amp; Intents</span>
+                <button id="oppRefreshBtn" class="font-label-sm text-label-sm text-secondary hover:text-primary flex items-center gap-0.5 cursor-pointer">
+                  <span class="material-symbols-outlined text-[14px]">refresh</span> Refresh feed
+                </button>
+              </div>
+
+              <div id="opportunitiesScrollStack" class="flex flex-col gap-space-md max-h-[780px] overflow-y-auto pr-1">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Right 7 cols: Detail Panel -->
+            <div id="opportunityDetailPanel" class="col-span-12 lg:col-span-7 flex flex-col gap-space-lg">
+              <!-- Dynamically populated upon selection -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 4: PRODUCT PROFILE -->
+      <div id="view-product-profile" class="view-container">
+        <div class="flex flex-col w-full pb-space-xl pt-space-md">
+          <!-- Top Header -->
+          <div class="w-full flex flex-col xl:flex-row xl:items-center justify-between gap-space-lg mb-space-xl">
+            <div class="flex flex-col gap-space-xs max-w-2xl">
+              <div class="flex items-center gap-space-sm flex-wrap">
+                <span class="font-label-sm text-label-sm uppercase tracking-widest text-primary-container font-semibold">Semantic Configuration Engine</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+                <div class="inline-flex items-center gap-1.5 px-space-sm py-0.5 rounded-full bg-surface-container neu-raised-sm text-tertiary font-label-sm text-label-sm">
+                  <span class="w-2 h-2 rounded-full bg-tertiary-container animate-pulse"></span>
+                  <span>Audience Calibrated • 98% Completeness</span>
+                </div>
+              </div>
+              <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Product Profile &amp; Semantic Vector Tuning</h1>
+              <p class="font-body-md text-body-md text-on-surface-variant">
+                Define the core attributes ColdReach uses to discover conversations across Reddit, HackerNews, and Bluesky, drafting authentic peer-level replies without spam cues.
+              </p>
+            </div>
+
+            <div class="flex items-center gap-space-md shrink-0">
+              <button id="profileTestExpansionBtn" class="px-space-md py-2.5 rounded-full font-title-sm text-title-sm bg-surface-container neu-raised text-secondary hover:text-primary transition-all cursor-pointer" type="button">
+                Test Query Expansion
+              </button>
+              <button id="profileSaveBtn" class="px-space-lg py-2.5 rounded-full bg-primary-container text-on-primary font-title-sm text-title-sm neu-pill-active flex items-center gap-space-xs hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer" type="button">
+                <span class="material-symbols-outlined text-[18px]">sync_saved_locally</span>
+                <span>Save &amp; Re-index Vectors</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Query Expansion Results Box (Live) -->
+          <div id="queryExpansionResultsBox" class="hidden mb-space-lg"></div>
+
+          <!-- Form Grid -->
+          <div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg">
+            <div class="xl:col-span-8 flex flex-col gap-space-lg">
+              <!-- Identity -->
+              <section class="p-space-lg rounded-xl bg-surface-container neu-raised flex flex-col gap-space-md">
+                <div class="flex items-center justify-between pb-space-xs">
+                  <div class="flex items-center gap-space-sm">
+                    <div class="w-9 h-9 rounded-lg bg-surface-container-highest neu-raised-sm flex items-center justify-center text-primary-container">
+                      <span class="material-symbols-outlined text-[20px]">badge</span>
+                    </div>
+                    <div>
+                      <h2 class="font-title-md text-title-md text-on-surface font-semibold">Core Product Identity</h2>
+                      <p class="font-body-sm text-body-sm text-on-surface-variant">Primary grounding data used for product attribution</p>
+                    </div>
+                  </div>
+                  <span class="font-label-sm text-label-sm uppercase tracking-wider text-outline px-space-sm py-1 rounded-full bg-surface-container-high">Step 01 / 04</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+                  <div class="flex flex-col gap-1.5">
+                    <label class="font-label-md text-label-md text-on-surface font-semibold" for="profNameInput">Product Name</label>
+                    <div class="flex items-center h-11 px-space-md rounded-lg bg-surface-container neu-inset">
+                      <input id="profNameInput" class="w-full bg-transparent border-none outline-none font-body-md text-body-md text-on-surface font-medium placeholder:text-outline" placeholder="e.g. FormBridge" type="text"/>
+                    </div>
+                  </div>
+
+                  <div class="flex flex-col gap-1.5">
+                    <label class="font-label-md text-label-md text-on-surface font-semibold" for="profUrlInput">Primary Website URL</label>
+                    <div class="flex items-center h-11 px-space-md rounded-lg bg-surface-container neu-inset">
+                      <input id="profUrlInput" class="w-full bg-transparent border-none outline-none font-body-md text-body-md text-on-surface font-medium placeholder:text-outline" placeholder="https://..." type="url"/>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                  <label class="font-label-md text-label-md text-on-surface font-semibold" for="profValPropInput">Value Proposition &amp; One-Liner</label>
+                  <div class="p-space-sm rounded-lg bg-surface-container neu-inset">
+                    <textarea id="profValPropInput" class="w-full bg-transparent border-none outline-none font-body-md text-body-md text-on-surface resize-none leading-relaxed" rows="3"></textarea>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Persona & Problems -->
+              <section class="p-space-lg rounded-xl bg-surface-container neu-raised flex flex-col gap-space-md">
+                <div class="flex items-center justify-between pb-space-xs">
+                  <div class="flex items-center gap-space-sm">
+                    <div class="w-9 h-9 rounded-lg bg-surface-container-highest neu-raised-sm flex items-center justify-center text-primary-container">
+                      <span class="material-symbols-outlined text-[20px]">group</span>
+                    </div>
+                    <div>
+                      <h2 class="font-title-md text-title-md text-on-surface font-semibold">Target Persona &amp; Problems Solved</h2>
+                      <p class="font-body-sm text-body-sm text-on-surface-variant">ICP profile vectors that flag customer pain points</p>
+                    </div>
+                  </div>
+                  <span class="font-label-sm text-label-sm uppercase tracking-wider text-outline px-space-sm py-1 rounded-full bg-surface-container-high">Step 02 / 04</span>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                  <label class="font-label-md text-label-md text-on-surface font-semibold" for="profPersonaInput">Target ICP Description</label>
+                  <div class="p-space-sm rounded-lg bg-surface-container neu-inset">
+                    <textarea id="profPersonaInput" class="w-full bg-transparent border-none outline-none font-body-md text-body-md text-on-surface resize-none leading-relaxed" rows="2"></textarea>
+                  </div>
+                </div>
+
+                <div class="flex flex-col gap-space-xs">
+                  <div class="flex items-center justify-between">
+                    <label class="font-label-md text-label-md text-on-surface font-semibold">Problems Solved (Pain Signifiers)</label>
+                    <button class="font-label-sm text-label-sm text-primary hover:underline cursor-pointer" type="button" onclick="window.coldReachApp.addProfileProblem()">+ Add Problem</button>
+                  </div>
+                  <div id="profileProblemsList" class="flex flex-wrap gap-space-xs"></div>
+                </div>
+              </section>
+
+              <!-- Semantic Keywords & Negatives -->
+              <section class="p-space-lg rounded-xl bg-surface-container neu-raised flex flex-col gap-space-md">
+                <div class="flex items-center justify-between pb-space-xs">
+                  <div class="flex items-center gap-space-sm">
+                    <div class="w-9 h-9 rounded-lg bg-surface-container-highest neu-raised-sm flex items-center justify-center text-primary-container">
+                      <span class="material-symbols-outlined text-[20px]">grain</span>
+                    </div>
+                    <div>
+                      <h2 class="font-title-md text-title-md text-on-surface font-semibold">Semantic Keywords &amp; Excluded Bounds</h2>
+                      <p class="font-body-sm text-body-sm text-on-surface-variant">Seed triggers for query expansion and negative boundaries</p>
+                    </div>
+                  </div>
+                  <span class="font-label-sm text-label-sm uppercase tracking-wider text-outline px-space-sm py-1 rounded-full bg-surface-container-high">Step 03 / 04</span>
+                </div>
+
+                <div class="flex flex-col gap-space-xs">
+                  <div class="flex items-center justify-between">
+                    <label class="font-label-md text-label-md text-on-surface font-semibold">Trigger Semantic Keywords</label>
+                    <button class="font-label-sm text-label-sm text-primary hover:underline cursor-pointer" type="button" onclick="window.coldReachApp.addProfileKeyword()">+ Add Keyword</button>
+                  </div>
+                  <div id="profileKeywordsList" class="flex flex-wrap gap-space-xs"></div>
+                </div>
+
+                <div class="flex flex-col gap-space-xs pt-space-sm">
+                  <div class="flex items-center justify-between">
+                    <label class="font-label-md text-label-md text-error font-semibold">Negative Constraints (Auto-Excluded)</label>
+                    <button class="font-label-sm text-label-sm text-error hover:underline cursor-pointer" type="button" onclick="window.coldReachApp.addProfileExcluded()">+ Add Excluded</button>
+                  </div>
+                  <div id="profileExcludedList" class="flex flex-wrap gap-space-xs"></div>
+                </div>
+              </section>
+            </div>
+
+            <!-- Right 4 cols: Vector Summary -->
+            <div class="xl:col-span-4 flex flex-col gap-space-lg">
+              <div class="p-space-lg rounded-xl bg-surface-container neu-raised flex flex-col gap-space-md">
+                <h3 class="font-title-md text-title-md text-on-surface font-semibold">Vector Calibration Health</h3>
+                <div class="flex items-center justify-center py-4">
+                  <div class="w-24 h-24 rounded-full bg-surface-container-highest neu-inset flex items-center justify-center">
+                    <span class="font-display-lg text-primary font-bold">98%</span>
+                  </div>
+                </div>
+                <div class="flex flex-col gap-2 font-body-sm text-body-sm text-on-surface-variant">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                    <span>Value Wedge Grounded</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                    <span>Negative Bounds Configured</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                    <span>100% Manual Dispatch Enforced</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 5: ANALYTICS -->
+      <div id="view-analytics" class="view-container">
+        <div class="flex flex-col w-full pb-space-xl pt-space-md">
+          <!-- Top Command Deck -->
+          <div class="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-space-md py-space-md mb-space-lg">
+            <div class="flex flex-col">
+              <div class="flex items-center gap-space-xs text-secondary mb-1">
+                <span class="material-symbols-outlined text-[16px]">query_stats</span>
+                <span class="font-label-sm text-label-sm uppercase tracking-wider">Human-Assisted Outreach Telemetry</span>
+              </div>
+              <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Discovery &amp; Review Analytics</h1>
+              <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Tactile monitoring of filtered public discussions, draft readiness, and self-recorded touches.</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-space-sm">
+              <button id="analyticsExportBtn" class="flex items-center gap-space-xs px-space-md py-2 rounded-full bg-surface-container neu-raised-sm hover:neu-raised text-primary font-title-sm text-title-sm transition-all cursor-pointer" type="button">
+                <span class="material-symbols-outlined text-[18px]">file_download</span>
+                <span>Export Data</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Compliance Banner: Zero Automated DMs -->
+          <div class="w-full mb-space-lg p-space-md rounded-xl bg-surface-container-low neu-inset flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md">
+            <div class="flex items-center gap-space-md">
+              <div class="w-10 h-10 rounded-full bg-tertiary/10 text-tertiary flex items-center justify-center shrink-0 neu-raised-sm">
+                <span class="material-symbols-outlined text-[22px]">verified_user</span>
+              </div>
+              <div class="flex flex-col">
+                <div class="flex items-center gap-space-xs">
+                  <span class="font-title-sm text-title-sm text-primary font-bold">Zero Automated Outbound Guarantee</span>
+                  <span class="px-space-xs py-0.5 rounded-full bg-tertiary-container text-on-tertiary font-label-sm text-label-sm uppercase font-bold">Compliant</span>
+                </div>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">ColdReach does not automatically dispatch social comments or private messages. All items are curated discovery drafts presented for manual review.</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 font-label-md text-label-md text-tertiary shrink-0">
+              <span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+              <span>Human Oversight 100% Active</span>
+            </div>
+          </div>
+
+          <!-- 4 Stat Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-lg mb-space-xl">
+            <div class="p-space-lg rounded-xl bg-surface-container neu-raised flex flex-col justify-between">
+              <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold">Discovered Conversations</span>
+              <span id="analyticsTotalFound" class="font-display-lg text-primary font-bold mt-1 tracking-tight">0</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant mt-space-md">Across active channels</span>
+            </div>
+
+            <div class="p-space-lg rounded-xl bg-surface-container neu-raised flex flex-col justify-between">
+              <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold">Qualified Opportunities</span>
+              <span id="analyticsQualified" class="font-display-lg text-primary font-bold mt-1 tracking-tight">0</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant mt-space-md">Relevance score ≥ 70%</span>
+            </div>
+
+            <div class="p-space-lg rounded-xl bg-surface-container neu-raised flex flex-col justify-between">
+              <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold">Drafts Reviewed</span>
+              <span id="analyticsReviewed" class="font-display-lg text-primary font-bold mt-1 tracking-tight">0</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant mt-space-md">Human accepted revisions</span>
+            </div>
+
+            <div class="p-space-lg rounded-xl bg-surface-container neu-raised flex flex-col justify-between">
+              <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold">Manually Dispatched</span>
+              <span id="analyticsManualTouches" class="font-display-lg text-tertiary font-bold mt-1 tracking-tight">0</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant mt-space-md">App Dispatched Count: 0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 6: SETTINGS -->
+      <div id="view-settings" class="view-container">
+        <div class="flex flex-col w-full pb-space-xl pt-space-md">
+          <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md mb-8">
+            <div>
+              <div class="flex items-center gap-space-xs font-label-sm text-label-sm uppercase tracking-wider text-secondary mb-1">
+                <span class="w-2 h-2 rounded-full bg-secondary"></span>
+                System Governance &amp; Pipeline Config
+              </div>
+              <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">
+                Platform Settings &amp; Source Connectors
+              </h1>
+              <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mt-1">
+                Manage discovery sources, privacy boundaries, and manual-review guardrails.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+            <div class="xl:col-span-8 flex flex-col gap-8">
+              <!-- Appearance -->
+              <section class="p-space-lg rounded-xl bg-surface-container neu-raised">
+                <div class="flex items-center gap-space-sm mb-space-md">
+                  <div class="w-10 h-10 rounded-xl bg-surface-container-lowest neu-raised-sm flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-[22px]">tune</span>
+                  </div>
+                  <div>
+                    <h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Appearance &amp; Interface</h2>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant">Configure tactile elevation tokens and theme profiles.</p>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+                  <button id="settingsThemeLight" class="p-space-md rounded-xl bg-surface-container-lowest neu-pill-active flex flex-col gap-2 text-left cursor-pointer" type="button" onclick="window.coldReachApp.setTheme('light')">
+                    <div class="flex items-center justify-between w-full">
+                      <div class="flex items-center gap-space-xs text-primary font-title-sm text-title-sm">
+                        <span class="material-symbols-outlined text-[20px]">light_mode</span>
+                        <span>Light Mode</span>
+                      </div>
+                    </div>
+                    <span class="font-label-sm text-label-sm text-on-surface-variant">Warm Tactile Cream (#fff8f3)</span>
+                  </button>
+
+                  <button id="settingsThemeDark" class="p-space-md rounded-xl bg-surface-container neu-raised-sm flex flex-col gap-2 text-left cursor-pointer" type="button" onclick="window.coldReachApp.setTheme('dark')">
+                    <div class="flex items-center justify-between w-full">
+                      <div class="flex items-center gap-space-xs text-on-surface-variant font-title-sm text-title-sm">
+                        <span class="material-symbols-outlined text-[20px]">dark_mode</span>
+                        <span>Dark Mode</span>
+                      </div>
+                    </div>
+                    <span class="font-label-sm text-label-sm text-on-surface-variant">Warm Charcoal (#1a1c1e)</span>
+                  </button>
+                </div>
+              </section>
+
+              <!-- Discovery Sources -->
+              <section class="p-space-lg rounded-xl bg-surface-container neu-raised">
+                <div class="flex items-center justify-between mb-space-md">
+                  <div class="flex items-center gap-space-sm">
+                    <div class="w-10 h-10 rounded-xl bg-surface-container-lowest neu-raised-sm flex items-center justify-center text-primary">
+                      <span class="material-symbols-outlined text-[22px]">radar</span>
+                    </div>
+                    <div>
+                      <h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Discovery Sources &amp; Providers</h2>
+                      <p class="font-body-sm text-body-sm text-on-surface-variant">Live connector status verified directly via API.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="settingsSourcesGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+                  <!-- Dynamically populated from /api/providers -->
+                </div>
+              </section>
+
+              <!-- Guardrails & Ethics -->
+              <section class="p-space-lg rounded-xl bg-surface-container neu-raised">
+                <div class="flex items-center gap-space-sm mb-space-md">
+                  <div class="w-10 h-10 rounded-xl bg-surface-container-lowest neu-raised-sm flex items-center justify-center text-tertiary">
+                    <span class="material-symbols-outlined text-[22px]">shield</span>
+                  </div>
+                  <div>
+                    <h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Guardrails &amp; Ethics Policy</h2>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant">Built-in safeguards against unsolicited automated spam.</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between p-space-md rounded-xl bg-surface-container-low neu-inset">
+                  <div class="flex flex-col pr-space-md">
+                    <span class="font-title-sm text-title-sm text-on-surface font-semibold">100% Manual Dispatch Enforcement</span>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">Locked ON. ColdReach prohibits automated social dispatch or automated message sending.</span>
+                  </div>
+                  <span class="px-space-sm py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm font-bold">LOCKED ON</span>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Manual Response Confirmation Modal -->
+  <div id="manualResponseModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="bg-surface-container rounded-2xl p-space-lg neu-raised max-w-lg w-full flex flex-col gap-space-md">
+      <div class="flex items-center gap-space-sm text-tertiary">
+        <span class="material-symbols-outlined text-[24px]">verified_user</span>
+        <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Record Manual Response</h3>
+      </div>
+      <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+        Transitioning to <strong>RESPONDED</strong> requires confirming that you personally posted the reply on the target platform (<code>MANUAL_EXTERNAL_POST</code>). This record is immutable once submitted.
+      </p>
+
+      <div class="flex flex-col gap-1">
+        <label class="font-label-md text-label-md text-on-surface font-semibold" for="modalOperatorNotes">Optional Operator Notes</label>
+        <div class="p-space-sm rounded-lg bg-surface-container neu-inset">
+          <textarea id="modalOperatorNotes" class="w-full bg-transparent border-none outline-none font-body-sm text-body-sm text-on-surface resize-none" rows="2" placeholder="e.g. Posted in HN comment thread..."></textarea>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-space-xs p-space-sm rounded-lg bg-surface-container-high neu-inset">
+        <input id="modalConfirmCheck" type="checkbox" class="mt-1 cursor-pointer"/>
+        <label for="modalConfirmCheck" class="font-label-sm text-label-sm text-on-surface cursor-pointer">
+          I confirm that I manually copied and posted this message myself on the external site. The ColdReach application did not automate this dispatch.
+        </label>
+      </div>
+
+      <div class="flex items-center justify-end gap-space-sm pt-space-xs">
+        <button id="modalCancelBtn" class="px-space-md py-2 rounded-full bg-surface-container neu-raised text-on-surface font-title-sm cursor-pointer" type="button">Cancel</button>
+        <button id="modalConfirmBtn" class="px-space-lg py-2 rounded-full bg-primary-container text-on-primary font-title-sm neu-pill-active cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" type="button" disabled>
+          Confirm Manual Post
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- App Controller -->
+  <script src="/app.js"></script>
+</body>
+</html>

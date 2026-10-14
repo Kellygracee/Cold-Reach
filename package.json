@@ -8,6 +8,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
+    "start": "node dist/api/server.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "eslint \"src/**/*.ts\"",

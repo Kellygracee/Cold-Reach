@@ -1,0 +1,135 @@
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    overscroll-behavior: none;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  main > :first-child {
+    margin-top: 0 !important;
+  }
+  main > :last-child {
+    margin-bottom: 0 !important;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(190, 175, 160, 0.4);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(190, 175, 160, 0.7);
+}
+
+/* Tactile Neumorphic Elevation Levels (Light Mode) */
+.neu-raised {
+  box-shadow: 6px 6px 14px rgba(190, 175, 160, 0.5), -6px -6px 14px rgba(255, 255, 255, 0.9);
+}
+
+.neu-raised-sm {
+  box-shadow: 3px 3px 8px rgba(190, 175, 160, 0.4), -3px -3px 8px rgba(255, 255, 255, 0.8);
+}
+
+.neu-inset {
+  box-shadow: inset 3px 3px 6px rgba(180, 165, 150, 0.45), inset -3px -3px 6px rgba(255, 255, 255, 0.85);
+}
+
+.neu-pill-active {
+  box-shadow: 4px 4px 10px rgba(0, 95, 115, 0.35), -2px -2px 6px rgba(255, 255, 255, 0.6);
+}
+
+/* Pressed / Depressed state */
+.neu-pressed {
+  box-shadow: inset 4px 4px 8px rgba(170, 155, 140, 0.5), inset -4px -4px 8px rgba(255, 255, 255, 0.9);
+}
+
+/* Dark Mode Neumorphic Elevation Levels */
+.dark body {
+  background-color: #1a1c1e;
+  color: #f2f4f5;
+}
+
+.dark .neu-raised {
+  box-shadow: 6px 6px 14px rgba(12, 14, 15, 0.7), -6px -6px 14px rgba(45, 50, 54, 0.4);
+}
+
+.dark .neu-raised-sm {
+  box-shadow: 3px 3px 8px rgba(12, 14, 15, 0.6), -3px -3px 8px rgba(45, 50, 54, 0.3);
+}
+
+.dark .neu-inset {
+  box-shadow: inset 3px 3px 6px rgba(12, 14, 15, 0.8), inset -3px -3px 6px rgba(45, 50, 54, 0.3);
+}
+
+.dark .neu-pill-active {
+  box-shadow: 4px 4px 10px rgba(14, 124, 148, 0.35), -2px -2px 6px rgba(45, 50, 54, 0.4);
+}
+
+.dark .neu-pressed {
+  box-shadow: inset 4px 4px 8px rgba(10, 12, 13, 0.8), inset -4px -4px 8px rgba(45, 50, 54, 0.3);
+}
+
+/* High Contrast Mode */
+.high-contrast {
+  --neu-border: 1px solid #1e2426;
+}
+.high-contrast .neu-raised,
+.high-contrast .neu-raised-sm,
+.high-contrast .neu-inset {
+  border: 1px solid #5b676b !important;
+}
+
+/* Transitions */
+.view-container {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+.view-container.active {
+  display: block;
+  opacity: 1;
+}
+
+/* Modal Animation */
+.modal-overlay {
+  transition: opacity 0.25s ease-out;
+}
+.modal-content {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Toast Notifications */
+#toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+.toast-item {
+  pointer-events: auto;
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes slideIn {
+  from {
+    transform: translateY(1rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

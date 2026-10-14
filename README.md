@@ -213,6 +213,76 @@ Cold-Reach provides a typed, zero-dependency REST API layer (`ColdReachApiServer
 - **Audit Immutability**: `manualResponseAudit` records are immutable once saved; once an opportunity transitions to `RESPONDED`, it cannot transition to any other status.
 - **Valid URLs and Timestamps**: All permalinks must use HTTP/HTTPS protocols and timestamps must conform to ISO 8601.
 
+## Phase 8: Stitch Frontend Implementation
+
+ColdReach includes a production frontend implemented directly from the official Stitch project (`15552703017280237757`).
+
+### Visual Design System
+
+- **Warm Tactile Neumorphism**: Employs an organic cream canvas (`#fff8f3`), deep teal primary accents (`#005f73`), subtle warm amber highlights, and dual-layer neumorphic elevation shadows (`neu-raised`, `neu-raised-sm`, `neu-inset`, `neu-pressed`, `neu-pill-active`).
+- **Typography & Iconography**: Loaded with Google Fonts [Manrope](https://fonts.google.com/specimen/Manrope) (weights 400, 500, 600, 700, 800) and Google Material Symbols Outlined.
+- **Theme Support**: Built-in Light and Dark mode companion palette (`#111827`, `#0d131f`) with adapted neumorphic shadow contrasts.
+
+### Screens Implemented
+
+The application provides a responsive single-page architecture serving all six screens from the Stitch design:
+
+1. **Agent Chat (`#chat`)**:
+   - **Conversation Discovery Chat**: Real-time agent chat interface for discovering leads conversationally.
+   - **Multi-Stage Synthesis Progression**: Live progress bar and status steps for Intent Extraction, Source Connector polling, Semantic Relevance Scoring, and Grounded Reply Synthesis.
+   - **Real Provider Status Pills**: Displays live operational status (Hacker News, Bluesky, Reddit, RSS) during searches.
+   - **Search Cancellation**: Full in-flight cancellation via `AbortController`.
+   - **Inline Opportunity Review**: Displays matched evidence, relevance score badges, grounded reply draft with transparency disclosure, external source permalink launcher, and one-click copy to clipboard.
+
+2. **Dashboard (`#dashboard`)**:
+   - **Live Pipeline KPIs**: Real-time cards for Active Searches, High Intent Leads, Manual Outreach Marked Sent, and Human Response Rate.
+   - **Weekly Volume Trend Chart**: Embedded vector SVG chart illustrating discovery and response curves.
+   - **Tasks Requiring Review**: Prioritized opportunity list with quick-action links to inspect and review drafts.
+   - **Source Health**: Live status overview of connected and unconfigured conversation providers.
+
+3. **Opportunities / Discovery (`#opportunities`)**:
+   - **Master-Detail Discovery Layout**: Browse opportunities with status filter tabs (_All_, _High Intent_, _Needs Review_, _Replied_, _Skipped_), text search, and platform badges.
+   - **Candidate Analysis & Evidence**: Full conversation excerpt, author alias, timestamp, whyMatched evidence summary, and matched needs pills.
+   - **Inline Grounded Draft Editor**: Edit drafts directly with character counting and automatic human revision tracking (`editedBy: 'USER'`).
+   - **External Source Launcher**: Direct link to the conversation on its originating platform.
+   - **Manual External Response Modal**: Strict human confirmation workflow before transitioning to `RESPONDED` (`dispatchMethod: 'MANUAL_EXTERNAL_POST'`).
+   - **Operator Notes**: Save operator review notes directly to the opportunity record.
+
+4. **Product Profile (`#product-profile`)**:
+   - **Profile Management**: Full form for Product Name, Value Proposition, Description, Ideal Customer Profile, and Tone Guidelines.
+   - **Interactive Tag / Chip Editors**: Add and remove Problem Solved statements, Customer Pain Points, Seed Keywords, and Excluded Topics.
+   - **Conflict Detection**: Real-time warning when seed keywords conflict with excluded topics.
+   - **Live Query Expansion Tester**: Tests the deterministic query engine against the current profile, displaying generated clusters (_Seed Terms_, _Pain Points_, _Solution Seeking_, _Audience Context_) with generation reasons and provenance tags.
+
+5. **Analytics (`#analytics`)**:
+   - **Pipeline Conversion Metrics**: Total opportunities, status breakdown, and response conversion rates.
+   - **Conversion Funnel Visualization**: Visual progression from Discovered $\rightarrow$ High Intent $\rightarrow$ Reviewed $\rightarrow$ Manually Responded.
+   - **Platform & Provenance Breakdown**: Distribution across Hacker News, Bluesky, Reddit, and RSS, with strict separation between `LIVE` and `DEMO` sources.
+   - **Raw Data Export**: One-click download of the complete pipeline metrics JSON snapshot.
+
+6. **Settings / Source Connectors (`#settings`)**:
+   - **Appearance Customizer**: One-click toggle between Light and Dark mode themes.
+   - **Provider Connector Registry**: Displays live status and capabilities for all supported sources:
+     - **Hacker News**: Live public search (Algolia API).
+     - **Bluesky**: Live public search (AT Protocol).
+     - **Reddit**: Configured or Unconfigured (OAuth2 credentials).
+     - **RSS / Atom**: Configured or Unconfigured (valid feed URLs).
+   - **Compliance & Dispatch Policy**: Read-only verification that automated posting is disabled (`appDispatchedCount: 0`) and all outreach is strictly manual.
+
+### Running the Application
+
+Build the project and start the integrated server:
+
+```bash
+# 1. Compile TypeScript
+npm run build
+
+# 2. Start ColdReach Server (serves both API and Frontend at http://127.0.0.1:3001)
+npm start
+```
+
+Open your browser to `http://127.0.0.1:3001` to access the ColdReach web interface.
+
 ## Available Verification Checks
 
 ```bash

@@ -1,5 +1,7 @@
+import fs from 'node:fs';
 import http, { IncomingMessage, ServerResponse } from 'node:http';
 import { AddressInfo } from 'node:net';
+import path from 'node:path';
 import { ConversationSearchResult, SearchInput } from '../contracts/conversation-provider.js';
 import { ConversationItem, SourceProvenance } from '../contracts/conversation.js';
 import { DraftGenerationProvider } from '../contracts/draft-provider.js';
@@ -34,6 +36,7 @@ export interface ColdReachApiServerOptions {
   host?: string;
   port?: number;
   allowedOrigins?: string[];
+  staticDir?: string;
   profileRepository?: ProfileRepository;
   opportunityRepository?: OpportunityRepository;
   profileService?: ProfileService;
@@ -99,7 +102,11 @@ export class ColdReachApiServer {
     this.redditProvider = options?.redditProvider ?? new RedditProvider();
     this.rssProvider = options?.rssProvider ?? new RssFeedProvider();
 
-    this.router = new Router({ allowedOrigins: options?.allowedOrigins });
+    const defaultStaticDir = path.resolve(process.cwd(), 'public');
+    const staticDir =
+      options?.staticDir ?? (fs.existsSync(defaultStaticDir) ? defaultStaticDir : undefined);
+
+    this.router = new Router({ allowedOrigins: options?.allowedOrigins, staticDir });
     this.registerRoutes();
   }
 
@@ -535,4 +542,21 @@ export class ColdReachApiServer {
   getRouter(): Router {
     return this.router;
   }
+}
+
+if (
+  process.argv[1] &&
+  (process.argv[1].endsWith('server.js') || process.argv[1].endsWith('server.ts'))
+) {
+  const port = Number(process.env.PORT) || 3001;
+  const server = new ColdReachApiServer({ port });
+  server
+    .start()
+    .then(({ url }) => {
+      console.log(`ColdReach API & Stitch Frontend active at ${url}`);
+    })
+    .catch((err: unknown) => {
+      console.error('Failed to start ColdReach server:', err);
+      process.exit(1);
+    });
 }
