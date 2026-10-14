@@ -52,6 +52,23 @@ export const ManualResponseAuditSchema = z.object({
 
 export type ManualResponseAudit = z.infer<typeof ManualResponseAuditSchema>;
 
+export const StatusHistoryEntrySchema = z.object({
+  id: nonBlankString('Status history ID'),
+  fromStatus: OpportunityStatusEnum.nullable(),
+  toStatus: OpportunityStatusEnum,
+  timestamp: z
+    .string()
+    .datetime({ message: 'Status change timestamp must be a valid ISO 8601 string' }),
+  reason: z.string().trim().optional(),
+  changedBy: z.literal('USER', {
+    errorMap: () => ({
+      message: 'Status transitions must be performed by a human operator (USER)',
+    }),
+  }),
+});
+
+export type StatusHistoryEntry = z.infer<typeof StatusHistoryEntrySchema>;
+
 export const OpportunityBaseSchema = z.object({
   id: nonBlankString('Opportunity ID'),
   conversation: ConversationItemSchema,
@@ -60,6 +77,8 @@ export const OpportunityBaseSchema = z.object({
   replyDraft: DraftReplySchema.nullable().default(null),
   status: OpportunityStatusEnum,
   manualResponseAudit: ManualResponseAuditSchema.optional(),
+  userReviewNotes: z.string().trim().optional(),
+  statusHistory: z.array(StatusHistoryEntrySchema).default([]),
   createdAt: z
     .string()
     .datetime({ message: 'Opportunity createdAt must be a valid ISO 8601 timestamp' }),

@@ -71,6 +71,41 @@ describe('ProductProfile Data Contract', () => {
       }),
     ).toThrow(/createdAt must be a valid ISO 8601 timestamp/);
   });
+
+  it('defaults seedKeywords and customerPainPointPhrases to empty arrays for Phase 1 data', () => {
+    const parsed = ProductProfileSchema.parse(validProfile);
+    expect(parsed.seedKeywords).toEqual([]);
+    expect(parsed.customerPainPointPhrases).toEqual([]);
+    expect(parsed.productDescription).toBeUndefined();
+  });
+
+  it('accepts and validates seedKeywords and customerPainPointPhrases', () => {
+    const parsed = ProductProfileSchema.parse({
+      ...validProfile,
+      productDescription: 'AI podcast workflow tool',
+      seedKeywords: ['podcast transcription', 'audiogram'],
+      customerPainPointPhrases: ['manual editing takes all day'],
+    });
+    expect(parsed.seedKeywords).toEqual(['podcast transcription', 'audiogram']);
+    expect(parsed.customerPainPointPhrases).toEqual(['manual editing takes all day']);
+    expect(parsed.productDescription).toBe('AI podcast workflow tool');
+  });
+
+  it('rejects blank seedKeywords or customerPainPointPhrases items', () => {
+    expect(() =>
+      ProductProfileSchema.parse({
+        ...validProfile,
+        seedKeywords: ['valid seed', '   '],
+      }),
+    ).toThrow(/Seed keyword item cannot be blank/);
+
+    expect(() =>
+      ProductProfileSchema.parse({
+        ...validProfile,
+        customerPainPointPhrases: ['   '],
+      }),
+    ).toThrow(/Customer pain point phrase item cannot be blank/);
+  });
 });
 
 describe('ConversationItem Data Contract & Provenance', () => {
